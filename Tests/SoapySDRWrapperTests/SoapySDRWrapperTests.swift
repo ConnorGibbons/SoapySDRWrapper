@@ -44,8 +44,18 @@ final class SoapySDRWrapperTests: XCTestCase {
         }
         print("testSoapyDevice: TX Mapping -> \(deviceTXMapping)")
         
-        print("testSoapyDevice: RX channel count -> \(device.rxNumChannels)")
-        print("testSoapyDevice: TX channel count -> \(device.txNumChannels)")
+        let rxChannelCount = device.rxNumChannels
+        print("testSoapyDevice: RX channel count -> \(rxChannelCount)")
+        let txChannelCount = device.txNumChannels
+        print("testSoapyDevice: TX channel count -> \(txChannelCount)")
+        
+        for i in 0..<rxChannelCount {
+            print("testSoapyDevice: RX channel \(i) -> \(device.rxChannelInfo(channel: 0).description)")
+        }
+        
+        for i in 0..<txChannelCount {
+            print("testSoapyDevice: TX channel \(i) -> \(device.txChannelInfo(channel: i).description)")
+        }
     }
     
 }
