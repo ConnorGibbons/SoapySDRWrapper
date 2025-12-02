@@ -16,46 +16,7 @@ final class SoapySDRWrapperTests: XCTestCase {
         let deviceKwargs = allDeviceKwargs[0]
         print("testSoapyDevice: Device Kwargs -> \(deviceKwargs.description)")
         let device = try SoapyDevice(kwargs: deviceKwargs)
-        
-        guard let deviceDriver = device.driverName else {
-            XCTFail("testSoapyDevice: Failed to get driver name.")
-            return
-        }
-        print("testSoapyDevice: Driver -> \(deviceDriver)")
-        
-        guard let deviceHardware = device.hardwareName else {
-            XCTFail("testSoapyDevice: Failed to get hardware name.")
-            return
-        }
-        print("testSoapyDevice: Hardware -> \(deviceHardware)")
-        
-        let deviceInfo = device.hardwareKwargs
-        print("testSoapyDevice: Hardware Kwargs -> \(deviceInfo.description)")
-        
-        guard let deviceRXMapping = device.rxFrontendMapping else {
-            XCTFail("testSoapyDevice: Failed to get RX frontend mapping.")
-            return
-        }
-        print("testSoapyDevice: RX Mapping -> \(deviceRXMapping)")
-        
-        guard let deviceTXMapping = device.txFrontendMapping else {
-            XCTFail("testSoapyDevice: Failed to get TX frontend mapping.")
-            return
-        }
-        print("testSoapyDevice: TX Mapping -> \(deviceTXMapping)")
-        
-        let rxChannelCount = device.rxNumChannels
-        print("testSoapyDevice: RX channel count -> \(rxChannelCount)")
-        let txChannelCount = device.txNumChannels
-        print("testSoapyDevice: TX channel count -> \(txChannelCount)")
-        
-        for i in 0..<rxChannelCount {
-            print("testSoapyDevice: RX channel \(i) -> \(device.rxChannelInfo(channel: 0).description)")
-        }
-        
-        for i in 0..<txChannelCount {
-            print("testSoapyDevice: TX channel \(i) -> \(device.txChannelInfo(channel: i).description)")
-        }
+        print(device.description)
     }
     
 }

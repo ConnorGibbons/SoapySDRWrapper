@@ -16,6 +16,12 @@ enum SoapySDRWrapperErrors: Error {
     case deviceInitFailed
 }
 
+extension SoapySDRRange {
+    var description: String {
+        "Min: \(self.minimum), Max: \(self.maximum), Step: \(self.step)"
+    }
+}
+
 struct SoapyKwargs {
     var dict: [String: String]
     var cKwargs: SoapySDRKwargs
@@ -36,6 +42,7 @@ struct SoapyKwargs {
     }
     
     var description: String {
+        guard dict.isEmpty else { return "SoapyKwargs: empty\n"}
         var desc = "SoapyKwargs:\n"
         for (k, v) in dict {
             desc += "\(k) = \(v)\n"
@@ -44,3 +51,34 @@ struct SoapyKwargs {
     }
 }
 
+
+
+
+// Units
+
+enum frequencyUnit: Double {
+    case hz = 1.0
+    case khz = 1e-3
+    case mhz = 1e-6
+    case ghz = 1e-9
+}
+
+struct Frequency: Equatable {
+    var hz: Double
+    
+    init(hz: Double) {
+        self.hz = hz
+    }
+    
+    init(value: Double, unit: frequencyUnit) {
+        self.hz = value * unit.rawValue
+    }
+    
+    func getAsUnit(_ unit: frequencyUnit) -> Double {
+        return hz * unit.rawValue
+    }
+    
+    static func == (lhs: Frequency, rhs: Frequency) -> Bool {
+        return lhs.hz == rhs.hz
+    }
+}
