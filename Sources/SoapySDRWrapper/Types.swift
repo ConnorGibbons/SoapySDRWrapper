@@ -20,6 +20,14 @@ extension SoapySDRRange {
     var description: String {
         "Min: \(self.minimum), Max: \(self.maximum), Step: \(self.step)"
     }
+    
+    /// Useful for presentation if the range is describing values in Hz.
+    var descriptionWithFrequencyUnits: String {
+        let minAsFrequency = Frequency(hz: self.minimum)
+        let maxAsFrequency = Frequency(hz: self.maximum)
+        let stepAsFrequency = Frequency(hz: self.step)
+        return "Min: \(minAsFrequency.description(unit: .mhz)), Max: \(maxAsFrequency.description(unit: .mhz)), Step: \(stepAsFrequency.description(unit: .hz))"
+    }
 }
 
 struct SoapyKwargs {
@@ -76,6 +84,17 @@ struct Frequency: Equatable {
     
     func getAsUnit(_ unit: frequencyUnit) -> Double {
         return hz * unit.rawValue
+    }
+    
+    func description(unit: frequencyUnit) -> String {
+        let unitString = switch unit {
+        case .hz: "Hz"
+        case .khz: "kHz"
+        case .mhz: "MHz"
+        case .ghz: "GHz"
+        }
+        
+        return "\(String(format: "%.4f", getAsUnit(unit))) \(unitString)"
     }
     
     static func == (lhs: Frequency, rhs: Frequency) -> Bool {

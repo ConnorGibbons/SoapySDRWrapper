@@ -99,7 +99,7 @@ class SoapyDevice {
     // --- Antenna API ---
     func rxAntennas(channel: Int) -> [String] {
         var length: size_t = 0
-        guard var list = SoapySDRDevice_listAntennas(
+        guard let list = SoapySDRDevice_listAntennas(
             cDevice,
             SoapyDirection.rx.rawValue,
             numericCast(channel),
@@ -119,7 +119,7 @@ class SoapyDevice {
     
     func txAntennas(channel: Int) -> [String] {
         var length: size_t = 0
-        guard var list = SoapySDRDevice_listAntennas(
+        guard let list = SoapySDRDevice_listAntennas(
             cDevice,
             SoapyDirection.tx.rawValue,
             numericCast(channel),
@@ -1027,7 +1027,7 @@ class SoapyDevice {
     
     func clockSources() -> [String] {
         var length: size_t = 0
-        guard var list = SoapySDRDevice_listClockSources(cDevice, &length) else { return [] }
+        guard let list = SoapySDRDevice_listClockSources(cDevice, &length) else { return [] }
         var result: [String] = []
         for i in 0..<Int(length) {
             if let ptr = list[i] {
@@ -1052,7 +1052,7 @@ class SoapyDevice {
     // --- Time API ---
     func timeSources() -> [String] {
         var length: size_t = 0
-        guard var list = SoapySDRDevice_listTimeSources(cDevice, &length) else { return [] }
+        guard let list = SoapySDRDevice_listTimeSources(cDevice, &length) else { return [] }
         var result: [String] = []
         for i in 0..<Int(length) {
             if let ptr = list[i] {
@@ -1111,7 +1111,7 @@ class SoapyDevice {
     // --- Sensor API ---
     func sensors() -> [String] {
         var length: size_t = 0
-        guard var list = SoapySDRDevice_listSensors(cDevice, &length) else { return [] }
+        guard let list = SoapySDRDevice_listSensors(cDevice, &length) else { return [] }
         var result: [String] = []
         for i in 0..<Int(length) {
             if let ptr = list[i] {
@@ -1134,7 +1134,7 @@ class SoapyDevice {
     
     func rxChannelSensors(channel: Int) -> [String] {
         var length: size_t = 0
-        guard var list = SoapySDRDevice_listChannelSensors(
+        guard let list = SoapySDRDevice_listChannelSensors(
             cDevice,
             SoapyDirection.rx.rawValue,
             numericCast(channel),
@@ -1152,7 +1152,7 @@ class SoapyDevice {
     
     func txChannelSensors(channel: Int) -> [String] {
         var length: size_t = 0
-        guard var list = SoapySDRDevice_listChannelSensors(
+        guard let list = SoapySDRDevice_listChannelSensors(
             cDevice,
             SoapyDirection.tx.rawValue,
             numericCast(channel),
@@ -1211,7 +1211,7 @@ class SoapyDevice {
     // --- Register API ---
     func registerInterfaces() -> [String] {
         var length: size_t = 0
-        guard var list = SoapySDRDevice_listRegisterInterfaces(cDevice, &length) else { return [] }
+        guard let list = SoapySDRDevice_listRegisterInterfaces(cDevice, &length) else { return [] }
         var result: [String] = []
         for i in 0..<Int(length) {
             if let ptr = list[i] {
@@ -1369,7 +1369,7 @@ class SoapyDevice {
     // --- GPIO API ---
     func gpioBanks() -> [String] {
         var length: size_t = 0
-        guard var list = SoapySDRDevice_listGPIOBanks(cDevice, &length) else { return [] }
+        guard let list = SoapySDRDevice_listGPIOBanks(cDevice, &length) else { return [] }
         var result: [String] = []
         for i in 0..<Int(length) {
             if let ptr = list[i] {
@@ -1406,7 +1406,7 @@ class SoapyDevice {
     
     // --- I2C API ---
     func writeI2C(addr: Int32, data: [UInt8]) -> Int {
-        var mutable = data.map { Int8(bitPattern: $0) }
+        let mutable = data.map { Int8(bitPattern: $0) }
         return Int(mutable.withUnsafeBufferPointer {
             SoapySDRDevice_writeI2C(
                 cDevice,
@@ -1434,7 +1434,7 @@ class SoapyDevice {
     // --- UART API ---
     func uarts() -> [String] {
         var length: size_t = 0
-        guard var list = SoapySDRDevice_listUARTs(cDevice, &length) else { return [] }
+        guard let list = SoapySDRDevice_listUARTs(cDevice, &length) else { return [] }
         var result: [String] = []
         for i in 0..<Int(length) {
             if let ptr = list[i] {
@@ -1461,169 +1461,127 @@ class SoapyDevice {
     }
     
     var description: String {
-        var fullDescription: String = "--- SoapyDevice Description ---\n\n"
+        var output = "--- SoapyDevice: \(self.driverName ?? "Unknown") (\(self.hardwareName ?? "Unknown")) ---\n\n"
         
-        fullDescription += "-- Metadata --\n"
-        fullDescription += "Driver Name -> \(self.driverName ?? "")\n"
-        fullDescription += "Hardware Name -> \(self.hardwareName ?? "")\n"
-        fullDescription += "Hardware Kwargs -> \(self.hardwareKwargs.description)\n"
+        output += "[METADATA]\n"
+        output += "Hardware Kwargs: \(self.hardwareKwargs.description)\n\n"
         
-        fullDescription += "-- Channels --\n"
-        fullDescription += "RX Channel Count -> \(self.rxNumChannels)\n"
-        fullDescription += "TX Channel Count -> \(self.txNumChannels)\n"
-        for rxChannel in 0..<self.rxNumChannels {
-            fullDescription += "- RX Channel \(rxChannel) -\n   -> \(self.rxChannelInfo(channel: rxChannel).description)\n"
-            fullDescription += "    Full Duplex -> \(self.rxIsFullDuplex(channel: rxChannel))\n"
-        }
-        for txChannel in 0..<self.txNumChannels {
-            fullDescription += "- TX Channel \(txChannel) -\n   -> \(self.txChannelInfo(channel: txChannel).description)\n"
-            fullDescription += "    Full Duplex -> \(self.txIsFullDuplex(channel: txChannel))\n"
-        }
-        fullDescription += "\n"
-        
-        fullDescription += "-- Antennae --\n"
-        for rxChannel in 0..<self.rxNumChannels {
-            fullDescription += "- RX Channel \(rxChannel) Antennae -\n"
-            var i = 0
-            for antennaString in self.rxAntennas(channel: rxChannel) {
-                fullDescription += "    Antenna \(i) -> \(antennaString)\n"
-                i += 1
+        output += "[CHANNELS]\n"
+        output += "RX: \(self.rxNumChannels) | TX: \(self.txNumChannels)\n\n"
+
+        func buildChannelString(isRx: Bool, channel: Int) -> String {
+            var str = ""
+            // --- General Info ---
+            let info = isRx ? self.rxChannelInfo(channel: channel) : self.txChannelInfo(channel: channel)
+            let isDuplex = isRx ? self.rxIsFullDuplex(channel: channel) : self.txIsFullDuplex(channel: channel)
+            let antennas = isRx ? self.rxAntennas(channel: channel) : self.txAntennas(channel: channel)
+            
+            if !info.description.isEmpty && info.description != "SoapyKwargs: empty" {
+                str += "  Info:         \(info.description)\n"
             }
-        }
-        for txChannel in 0..<self.txNumChannels {
-            fullDescription += "- TX Channel \(txChannel) Antennae -\n"
-            var i = 0
-            for antennaString in self.txAntennas(channel: txChannel) {
-                fullDescription += "    Antenna \(i) -> \(antennaString)\n"
-                i += 1
-            }
-        }
-        fullDescription += "\n"
-        
-        fullDescription += "-- Frontend Corrections --\n"
-        for rxChannel in 0..<self.rxNumChannels {
-            fullDescription += "- RX Channel \(rxChannel) Frontend Corrections -\n"
-            fullDescription += "    Has Automatic DC Offset Mode -> \(self.rxHasDCOffsetMode(channel: rxChannel)), Enabled? -> \(self.rxDCOffsetMode(channel: rxChannel))\n"
-            fullDescription += "    Has DC Offset Capability -> \(self.rxHasDCOffset(channel: rxChannel)), Enabled? -> \(String(describing: self.rxDCOffset(channel: rxChannel)))\n"
-            fullDescription += "    Has Automatic IQ Correction Mode -> \(self.rxHasIQBalanceMode(channel: rxChannel)), Enabled? -> \(self.rxIQBalanceMode(channel: rxChannel))\n"
-            fullDescription += "    Has IQ Correction Capability -> \(self.rxHasIQBalance(channel: rxChannel)), Enabled? -> \(String(describing: self.rxIQBalance(channel: rxChannel)))\n"
-            fullDescription += "    Has Frequency Correction Capability -> \(self.rxHasFrequencyCorrection(channel: rxChannel)), Enabled? -> \(self.rxFrequencyCorrection(channel: rxChannel))\n"
-        }
-        for txChannel in 0..<self.txNumChannels {
-            fullDescription += "- TX Channel \(txChannel) Frontend Corrections -\n"
-            fullDescription += "    Has Automatic DC Offset Mode -> \(self.txHasDCOffsetMode(channel: txChannel)), Enabled? -> \(self.txDCOffsetMode(channel: txChannel))\n"
-            fullDescription += "    Has DC Offset Capability -> \(self.txHasDCOffset(channel: txChannel)), Enabled? -> \(String(describing: self.txDCOffset(channel: txChannel)))\n"
-            fullDescription += "    Has Automatic IQ Correction Mode -> \(self.txHasIQBalanceMode(channel: txChannel)), Enabled? -> \(self.txIQBalanceMode(channel: txChannel))\n"
-            fullDescription += "    Has IQ Correction Capability -> \(self.txHasIQBalance(channel: txChannel)), Enabled? -> \(String(describing: self.txIQBalance(channel: txChannel)))\n"
-            fullDescription += "    Has Frequency Correction Capability -> \(self.txHasFrequencyCorrection(channel: txChannel)), Enabled? -> \(self.txFrequencyCorrection(channel: txChannel))\n"
-        }
-        fullDescription += "\n"
-        
-        fullDescription += "-- Gain --\n"
-        for rxChannel in 0..<self.rxNumChannels {
-            fullDescription += "- RX Channel \(rxChannel) Gain Options -\n"
-            fullDescription += "    Available Gain Elements:\n"
-            for gainElement in self.rxGainElements(channel: rxChannel) {
-                fullDescription += "        \(gainElement)\n"
-                fullDescription += "            Gain Range -> \(self.rxGainElementRange(channel: rxChannel, element: gainElement).description)\n"
-                fullDescription += "            Current Gain -> \(self.rxGain(channel: rxChannel, element: gainElement))\n"
-            }
-            fullDescription += "    Has Automatic Gain Mode -> \(self.rxHasGainMode(channel: rxChannel)), Enabled? -> \(self.rxGainMode(channel: rxChannel))\n"
-            fullDescription += "    Gain Range -> \(self.rxGainRange(channel: rxChannel).description)\n"
-            fullDescription += "    Current Gain -> \(self.rxGain(channel: rxChannel))\n"
-        }
-        for txChannel in 0..<self.txNumChannels {
-            fullDescription += "- TX Channel \(txChannel) Gain Options -\n"
-            fullDescription += "    Available Gain Elements:\n"
-            for gainElement in self.txGainElements(channel: txChannel) {
-                fullDescription += "        \(gainElement)\n"
-                fullDescription += "            Gain Range -> \(self.txGainElementRange(channel: txChannel, element: gainElement).description)\n"
-                fullDescription += "            Current Gain -> \(self.txGain(channel: txChannel, element: gainElement))\n"
-            }
-            fullDescription += "    Has Automatic Gain Mode -> \(self.txHasGainMode(channel: txChannel)), Enabled? -> \(self.txGainMode(channel: txChannel))\n"
-            fullDescription += "    Gain Range -> \(self.txGainRange(channel: txChannel).description)\n"
-            fullDescription += "    Current Gain -> \(self.txGain(channel: txChannel))\n"
-        }
-        fullDescription += "\n"
-        
-        fullDescription += "-- Frequencies --\n"
-        let elementDict: [String: String] = ["CORR" : "CORR: Correction (ppm)", "RF" : "RF: RF Frontend (Hz)", "BB" : "BB: Baseband (Hz)"]
-        for rxChannel in 0..<self.rxNumChannels {
-            fullDescription += "- RX Channel \(rxChannel) Frequency Options -\n"
-            fullDescription += "    Frequencies:\n"
-            for frequencyRange in self.rxFrequencyRange(channel: rxChannel) {
-                fullDescription += "        \(frequencyRange.description)\n"
-            }
-            fullDescription += "    Current Frequency -> \(self.rxFrequency(channel: rxChannel))\n"
-            fullDescription += "    Frequency Args -> \(self.rxFrequencyArgsInfo(channel: rxChannel))\n"
-            fullDescription += "    Tunable Elements:\n"
-            for tunableElement in self.rxFrequencyElements(channel: rxChannel) {
-                fullDescription += "        \(elementDict[tunableElement] ?? tunableElement)\n"
-                for frequencyRange in self.rxFrequencyRange(channel: rxChannel, element: tunableElement) {
-                    fullDescription += "            Frequency Range -> \(frequencyRange.description)\n"
+            str += "  Antenna:      \(antennas.joined(separator: ", "))\n"
+            str += "  Full Duplex:  \(isDuplex)\n\n"
+
+            // --- Frequencies ---
+            str += "  -- Frequency --\n"
+            let currentFreq = isRx ? self.rxFrequency(channel: channel) : self.txFrequency(channel: channel)
+            let ranges = isRx ? self.rxFrequencyRange(channel: channel) : self.txFrequencyRange(channel: channel)
+            
+            str += "  Current:      \(Frequency(hz: currentFreq).description(unit: .mhz))\n"
+            str += "  Range:        \(ranges.map { $0.descriptionWithFrequencyUnits }.joined(separator: " / "))\n"
+            
+            let components = isRx ? self.rxFrequencyElements(channel: channel) : self.txFrequencyElements(channel: channel)
+            if !components.isEmpty {
+                str += "  Tunable Elements:\n"
+                let elementDict: [String: String] = ["CORR": "Correction", "RF": "RF Frontend", "BB": "Baseband"]
+                
+                for comp in components {
+                    let compFreq = isRx ? self.rxFrequencyComponent(channel: channel, name: comp) : self.txFrequencyComponent(channel: channel, name: comp)
+                    let compRanges = isRx ? self.rxFrequencyRange(channel: channel, element: comp) : self.txFrequencyRange(channel: channel, element: comp)
+                    let prettyName = elementDict[comp] ?? comp
+                    
+                    str += "    * \(prettyName): \(compFreq)\n"
+                    str += "      (Range: \(compRanges.map { $0.description }.joined(separator: ", ")))\n"
                 }
-                fullDescription += "            Current Frequency: \(self.rxFrequencyComponent(channel: rxChannel, name: tunableElement))\n"
             }
-        }
-        for txChannel in 0..<self.txNumChannels {
-            fullDescription += "- TX Channel \(txChannel) Frequency Options -\n"
-            fullDescription += "    Frequencies:\n"
-            for frequencyRange in self.txFrequencyRange(channel: txChannel) {
-                fullDescription += "        \(frequencyRange.description)\n"
-            }
-            fullDescription += "    Current Frequency -> \(self.txFrequency(channel: txChannel))\n"
-            fullDescription += "    Frequency Args -> \(self.txFrequencyArgsInfo(channel: txChannel))\n"
-            fullDescription += "    Tunable Elements:\n"
-            for tunableElement in self.txFrequencyElements(channel: txChannel) {
-                fullDescription += "        \(elementDict[tunableElement] ?? tunableElement)\n"
-                for frequencyRange in self.txFrequencyRange(channel: txChannel, element: tunableElement) {
-                    fullDescription += "            Frequency Range -> \(frequencyRange.description)\n"
+            str += "\n"
+
+            // --- Gain ---
+            str += "  -- Gain --\n"
+            let hasAgc = isRx ? self.rxHasGainMode(channel: channel) : self.txHasGainMode(channel: channel)
+            let agcEnabled = isRx ? self.rxGainMode(channel: channel) : self.txGainMode(channel: channel)
+            let totalGain = isRx ? self.rxGain(channel: channel) : self.txGain(channel: channel)
+            let totalRange = isRx ? self.rxGainRange(channel: channel) : self.txGainRange(channel: channel)
+            
+            str += "  Mode:         \(hasAgc ? (agcEnabled ? "Automatic" : "Manual (AGC Supported)") : "Manual Only")\n"
+            str += "  Total Gain:   \(totalGain) (Range: \(totalRange.description))\n"
+            
+            let gainElements = isRx ? self.rxGainElements(channel: channel) : self.txGainElements(channel: channel)
+            if !gainElements.isEmpty {
+                str += "  Elements:\n"
+                for element in gainElements {
+                    let elGain = isRx ? self.rxGain(channel: channel, element: element) : self.txGain(channel: channel, element: element)
+                    let elRange = isRx ? self.rxGainElementRange(channel: channel, element: element) : self.txGainElementRange(channel: channel, element: element)
+                    str += "    * \(element): \(elGain) (Range: \(elRange.description))\n"
                 }
-                fullDescription += "            Current Frequency: \(self.txFrequencyComponent(channel: txChannel, name: tunableElement))\n"
             }
+            str += "\n"
+
+            // --- Sample Rate & Bandwidth ---
+            str += "  -- Sample Rate & Bandwidth --\n"
+            let rate = isRx ? self.rxSampleRate(channel: channel) : self.txSampleRate(channel: channel)
+            let bw = isRx ? self.rxBandwidth(channel: channel) : self.txBandwidth(channel: channel)
+            let rateRanges = isRx ? self.rxSampleRateRanges(channel: channel) : self.txSampleRateRanges(channel: channel)
+            let bwRanges = isRx ? self.rxBandwidthRanges(channel: channel) : self.txBandwidthRanges(channel: channel)
+            
+            str += "  Rate:         \(rate)\n"
+            str += "  Bandwidth:    \(Frequency(hz:bw).description(unit: .mhz)) (Range: \(bwRanges.map { $0.descriptionWithFrequencyUnits }.joined(separator: ", ")))\n"
+            str += "  Supported Rates:\n"
+            for range in rateRanges {
+                str += "    * \(range.description)\n"
+            }
+            str += "\n"
+
+            // --- Corrections ---
+            str += "  -- Corrections --\n"
+            
+            // DC Offset
+            let hasDC = isRx ? self.rxHasDCOffset(channel: channel) : self.txHasDCOffset(channel: channel)
+            if hasDC {
+                let dcVal = isRx ? self.rxDCOffset(channel: channel) : self.txDCOffset(channel: channel)
+                let autoDC = isRx ? self.rxDCOffsetMode(channel: channel) : self.txDCOffsetMode(channel: channel)
+                str += "  DC Offset:    \(autoDC ? "Automatic" : "Manual") -> \(String(describing: dcVal))\n"
+            } else {
+                str += "  DC Offset:    Not Supported\n"
+            }
+            
+            // IQ Balance
+            let hasIQ = isRx ? self.rxHasIQBalance(channel: channel) : self.txHasIQBalance(channel: channel)
+            if hasIQ {
+                let iqVal = isRx ? self.rxIQBalance(channel: channel) : self.txIQBalance(channel: channel)
+                let autoIQ = isRx ? self.rxIQBalanceMode(channel: channel) : self.txIQBalanceMode(channel: channel)
+                str += "  IQ Balance:   \(autoIQ ? "Automatic" : "Manual") -> \(String(describing: iqVal))\n"
+            } else {
+                str += "  IQ Balance:   Not Supported\n"
+            }
+            
+            return str
         }
-        fullDescription += "\n"
         
-        fullDescription += "-- Sample Rates --\n"
         for rxChannel in 0..<self.rxNumChannels {
-            fullDescription += "- RX Channel \(rxChannel) Sample Rate Options -\n"
-            fullDescription += "    Sample Rates:\n"
-            for sampleRateRange in self.rxSampleRateRanges(channel: rxChannel) {
-                fullDescription += "        \(sampleRateRange.description)\n"
-            }
-            fullDescription += "    Current Sample Rate: \(self.rxSampleRate(channel: rxChannel))\n"
+            output += "[RX CHANNEL \(rxChannel)]\n"
+            output += buildChannelString(isRx: true, channel: rxChannel)
+            output += "\n"
         }
-        for txChannel in 0..<self.txNumChannels {
-            fullDescription += "- TX Channel \(txChannel) Sample Rate Options -\n"
-            fullDescription += "    Sample Rates:\n"
-            for sampleRateRange in self.txSampleRateRanges(channel: txChannel) {
-                fullDescription += "        \(sampleRateRange.description)\n"
-            }
-            fullDescription += "    Current Sample Rate: \(self.txSampleRate(channel: txChannel))\n"
-        }
-        fullDescription += "\n"
         
-        fullDescription += "-- Bandwidth --\n"
-        for rxChannel in 0..<self.rxNumChannels {
-            fullDescription += "- RX Channel \(rxChannel) Bandwidth Options -\n"
-            fullDescription += "    Bandwidths:\n"
-            for bandwidthRange in self.rxBandwidthRanges(channel: rxChannel) {
-                fullDescription += "        \(bandwidthRange.description)\n"
-            }
-            fullDescription += "    Current Bandwidth: \(self.rxBandwidth(channel: rxChannel))\n"
-        }
         for txChannel in 0..<self.txNumChannels {
-            fullDescription += "- TX Channel \(txChannel) Bandwidth Options -\n"
-            fullDescription += "    Bandwidths:\n"
-            for bandwidthRange in self.txBandwidthRanges(channel: txChannel) {
-                fullDescription += "        \(bandwidthRange.description)\n"
-            }
-            fullDescription += "    Current Bandwidth: \(self.txBandwidth(channel: txChannel))\n"
+            output += "[TX CHANNEL \(txChannel)]\n"
+            output += buildChannelString(isRx: false, channel: txChannel)
+            output += "\n"
         }
-        fullDescription += "\n"
-        
-        fullDescription += "--------------------------------"
-        return fullDescription
+
+        output += "--------------------------------"
+        return output
     }
     
     // --- Init / Deinit ---
