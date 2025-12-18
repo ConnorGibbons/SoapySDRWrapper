@@ -7,15 +7,23 @@
 import Foundation
 import CSoapySDR
 
-class SoapyDevice {
-    let cDevice: OpaquePointer
+public class SoapyDevice {
+    public let cDevice: OpaquePointer
+    
+    // --- Async Read Management ---
+    func getNextAsyncHandlerId() -> Int {
+        defer { self.nextAsyncHandlerId += 1 }
+        return self.nextAsyncHandlerId
+    }
+    private var nextAsyncHandlerId: Int = 0
+    var asyncHandlerDictionary: [Int: AsyncHandler] = [:]
     
     // --- Native Handle ---
-    var nativeHandle: UnsafeMutableRawPointer? {
+    public var nativeHandle: UnsafeMutableRawPointer? {
         SoapySDRDevice_getNativeDeviceHandle(cDevice)
     }
     
-    var description: String {
+    public var description: String {
         var output = "--- SoapyDevice: \(self.driverName ?? "Unknown") (\(self.hardwareName ?? "Unknown")) ---\n\n"
         
         output += "[METADATA]\n"
@@ -184,7 +192,7 @@ class SoapyDevice {
     }
     
     // --- Init / Deinit ---
-    init(kwargs: SoapyKwargs) throws {
+    public init(kwargs: SoapyKwargs) throws {
         let cKwargPointer = kwargs.getcKwargsMutablePointer()
         defer { cKwargPointer.deallocate() }
         
@@ -208,13 +216,15 @@ class SoapyDevice {
 
 // --- Global Device Status Helpers ---
 extension SoapyDevice {
-    static var lastStatus: Int {
+    
+    public static var lastStatus: Int {
         Int(SoapySDRDevice_lastStatus())
     }
     
-    static var lastError: String? {
+    public static var lastError: String? {
         guard let ptr = SoapySDRDevice_lastError() else { return nil }
         // Do NOT free lastError, it is internal thread-local storage.
         return String(cString: ptr)
     }
+    
 }

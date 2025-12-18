@@ -1,5 +1,5 @@
 //
-//  TXRX.swift
+//  TXRXInfo.swift
 //  SoapySDRWrapper
 //
 //  Created by Connor Gibbons  on 12/3/25.

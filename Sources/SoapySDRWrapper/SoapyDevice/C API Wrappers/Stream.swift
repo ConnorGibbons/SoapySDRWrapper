@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import complex_h
 import CSoapySDR
 
 extension SoapyDevice {
@@ -40,7 +41,7 @@ extension SoapyDevice {
     func rxSetupStream(channels: [Int], format: String, args: SoapySDRKwargs = SoapySDRKwargs()) -> OpaquePointer {
         channels.withUnsafeBufferPointer { channelPtr in
             var kwargs = args
-            var channelCount: size_t = channelPtr.count
+            let channelCount: size_t = channelPtr.count
             return SoapySDRDevice_setupStream(self.cDevice, SoapyDirection.rx.rawValue, format, channelPtr.baseAddress, channelCount, &kwargs)
         }
     }
@@ -76,19 +77,53 @@ extension SoapyDevice {
         return true
     }
     
-    
-}
-
-
-
-class SoapyStream {
-    let device: SoapyDevice
-    let cStream: OpaquePointer
-    let format: String
-    
-    init?(forDevice: SoapyDevice, direction: SoapyDirection, channel: Int) {
-        self.device = forDevice
-        guard let nativeFormat = direction == .rx ? forDevice.rxChannelStreamNativeFormat(channel: channel) : nil else { return nil }
-        self.cStream = forDevice.rxCh
+    func readStream(stream: OpaquePointer, format: String, channelCount: Int,  numSamples: Int, timeoutMicroseconds: Int) -> ([Data], Int32, Int64, Int32)? {
+        let returnedFlags = getMutablePointerForValue(value: Int32(0))
+        let bufferTimestamp = getMutablePointerForValue(value: Int64(0))
+        let isComplex = format.hasPrefix("C")
+        guard let sampleSizeBits = Int(format.filter { $0.isNumber }) else {
+            print("SoapySDRDevice: Error reading stream, couldn't get sample size in bits.")
+            return nil
+        }
+        guard sampleSizeBits > 0 && sampleSizeBits % 8 == 0 else {
+            print("SoapySDRDevice: Error reading stream, sample size isn't byte aligned: \(sampleSizeBits)")
+            return nil
+        }
+        let sampleSizeBytes = sampleSizeBits / 8 * (isComplex ? 2 : 1)
+        let totalBytesPerChannel = sampleSizeBytes * numSamples
+        
+        
+        var buffers: [UnsafeMutableRawPointer?] = []
+        buffers.reserveCapacity(channelCount)
+        
+        for _ in 0..<channelCount {
+            let pointer = malloc(totalBytesPerChannel)
+            guard let pointer else {
+                for p in buffers { if let p { free(p) } }
+                print("SoapySDRDevice: Failed to get buffer pointer for stream read.")
+                return nil
+            }
+            buffers.append(pointer)
+        }
+        
+        let readSamples: Int32 = buffers.withUnsafeBufferPointer { buffersPointer in
+            let base = buffersPointer.baseAddress
+            return SoapySDRDevice_readStream(self.cDevice, stream, base, numSamples, returnedFlags, bufferTimestamp, timeoutMicroseconds)
+        }
+        
+        guard readSamples > 0 else {
+            for ptr in buffers {
+                free(ptr)
+            }
+           return nil
+        }
+        if(readSamples != numSamples) {
+            print("SoapySDRDevice: Did not read expected number of samples: \(readSamples), expected: \(numSamples)")
+        }
+        let bytesRead = numSamples * sampleSizeBytes
+        let out: [Data] = buffers.map { pointer in
+            Data(bytesNoCopy: pointer!, count: bytesRead, deallocator: .free)
+        }
+        return (out, returnedFlags.pointee, bufferTimestamp.pointee, readSamples)
     }
 }

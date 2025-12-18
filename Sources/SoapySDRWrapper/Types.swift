@@ -30,11 +30,11 @@ extension SoapySDRRange {
     }
 }
 
-struct SoapyKwargs {
-    var dict: [String: String]
+public struct SoapyKwargs {
+    public var dict: [String: String]
     var cKwargs: SoapySDRKwargs
     
-    init(cKwargs: SoapySDRKwargs) {
+    public init(cKwargs: SoapySDRKwargs) {
         self.dict = [:]
         self.cKwargs = cKwargs
         for i in 0..<cKwargs.size {
@@ -45,11 +45,11 @@ struct SoapyKwargs {
     }
     
     /// Gets a mutable pointer to a copy of cKwargs. Don't forget to deallocate after use.
-    func getcKwargsMutablePointer() -> UnsafeMutablePointer<SoapySDRKwargs> {
+    public func getcKwargsMutablePointer() -> UnsafeMutablePointer<SoapySDRKwargs> {
         return getMutablePointerForValue(value: cKwargs)
     }
     
-    var description: String {
+    public var description: String {
         guard dict.isEmpty else { return "SoapyKwargs: empty\n"}
         var desc = "SoapyKwargs:\n"
         for (k, v) in dict {
@@ -64,29 +64,29 @@ struct SoapyKwargs {
 
 // Units
 
-enum frequencyUnit: Double {
+public enum frequencyUnit: Double {
     case hz = 1.0
     case khz = 1e-3
     case mhz = 1e-6
     case ghz = 1e-9
 }
 
-struct Frequency: Equatable {
+public struct Frequency: Equatable {
     var hz: Double
     
-    init(hz: Double) {
+    public init(hz: Double) {
         self.hz = hz
     }
     
-    init(value: Double, unit: frequencyUnit) {
+    public init(value: Double, unit: frequencyUnit) {
         self.hz = value * unit.rawValue
     }
     
-    func getAsUnit(_ unit: frequencyUnit) -> Double {
+    public func getAsUnit(_ unit: frequencyUnit) -> Double {
         return hz * unit.rawValue
     }
     
-    func description(unit: frequencyUnit) -> String {
+    public func description(unit: frequencyUnit) -> String {
         let unitString = switch unit {
         case .hz: "Hz"
         case .khz: "kHz"
@@ -97,7 +97,7 @@ struct Frequency: Equatable {
         return "\(String(format: "%.4f", getAsUnit(unit))) \(unitString)"
     }
     
-    static func == (lhs: Frequency, rhs: Frequency) -> Bool {
+    public static func == (lhs: Frequency, rhs: Frequency) -> Bool {
         return lhs.hz == rhs.hz
     }
 }
