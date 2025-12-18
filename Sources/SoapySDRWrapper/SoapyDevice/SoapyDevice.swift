@@ -208,6 +208,11 @@ public class SoapyDevice {
         deviceCache.addDevice(devicePtr)
     }
     
+    public convenience init?(int: Int) {
+        guard int >= 0 && int < deviceCache.potentialDevices.count else { return nil }
+        try? self.init(kwargs: deviceCache.potentialDevices[int])
+    }
+    
     deinit {
         deviceCache.removeDevice(cDevice)
         SoapySDRDevice_unmake(cDevice)

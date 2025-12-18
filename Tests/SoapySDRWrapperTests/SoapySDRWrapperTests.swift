@@ -4,10 +4,8 @@ import XCTest
 final class SoapySDRWrapperTests: XCTestCase {
     
     func testEnumerate() {
-        let deviceList = SoapyProbe.listDevices()
-        for device in deviceList {
-            print("testEnumerate: Device -> \(device.description)")
-        }
+        _ = SoapyProbe.listDevices()
+        print(deviceCache.presentPotentialDevices())
     }
     
     func testSoapyDevice() throws {

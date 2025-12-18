@@ -5,10 +5,12 @@ import Foundation
 /// Functions for device discovery & error discovery.
 class SoapyDeviceCache: @unchecked Sendable {
     var deviceCache: [OpaquePointer: Int]
+    var potentialDevices: [SoapyKwargs]
     let queue = DispatchQueue(label: "SoapyDeviceCache")
     
     init() {
         deviceCache = [:]
+        potentialDevices = []
     }
     
     func deviceIsPresent(_ devicePointer: OpaquePointer) -> Bool {
@@ -36,6 +38,17 @@ class SoapyDeviceCache: @unchecked Sendable {
             }
         }
     }
+    
+    func presentPotentialDevices() -> String {
+        guard !potentialDevices.isEmpty else { return "No Soapy SDR devices available.\n" }
+        var result: String = "--- Potential Soapy SDR Devices ---\n"
+        result += "Format: '(index): SoapyKwargs'\n"
+        for i in 0..<potentialDevices.count {
+            result += " \(i): \(potentialDevices[i].description)\n"
+        }
+        return result
+    }
+    
 }
 let deviceCache = SoapyDeviceCache()
 
@@ -48,6 +61,7 @@ enum SoapyProbe {
         for i in 0..<lengthPtr.pointee {
             result.append(SoapyKwargs(cKwargs: devices[i]))
         }
+        deviceCache.potentialDevices = result
         return result
     }
     
