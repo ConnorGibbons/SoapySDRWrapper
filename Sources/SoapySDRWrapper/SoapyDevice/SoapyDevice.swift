@@ -9,7 +9,10 @@ import CSoapySDR
 
 public class SoapyDevice {
     public let cDevice: OpaquePointer
-    
+
+    // --- Thread Safety ---
+    internal let queue = DispatchQueue(label: "com.soapysdr.device.serialqueue")
+
     // --- Async Read Management ---
     func getNextAsyncHandlerId() -> Int {
         defer { self.nextAsyncHandlerId += 1 }
@@ -20,7 +23,9 @@ public class SoapyDevice {
     
     // --- Native Handle ---
     public var nativeHandle: UnsafeMutableRawPointer? {
-        SoapySDRDevice_getNativeDeviceHandle(cDevice)
+        queue.sync {
+            SoapySDRDevice_getNativeDeviceHandle(cDevice)
+        }
     }
     
     public var description: String {
@@ -196,17 +201,19 @@ public class SoapyDevice {
     public init(kwargs: SoapyKwargs) throws {
         let cKwargPointer = kwargs.getcKwargsMutablePointer()
         defer { cKwargPointer.deallocate() }
-        
+
         guard let devicePtr = SoapySDRDevice_make(cKwargPointer) else {
             print("SoapySDRWrapper: Failed to create SoapySDRDevice.")
             throw SoapySDRWrapperErrors.deviceInitFailed
         }
         self.cDevice = devicePtr
-        
-        if deviceCache.deviceIsPresent(devicePtr) {
-            print("SoapySDRWrapper warning: Device already present in cache, this SoapyDevice will refer to the same SDR as an existing SoapyDevice.")
+
+        queue.sync {
+            if deviceCache.deviceIsPresent(devicePtr) {
+                print("SoapySDRWrapper warning: Device already present in cache, this SoapyDevice will refer to the same SDR as an existing SoapyDevice.")
+            }
+            deviceCache.addDevice(devicePtr)
         }
-        deviceCache.addDevice(devicePtr)
     }
     
     public convenience init?(int: Int) {
@@ -215,8 +222,10 @@ public class SoapyDevice {
     }
     
     deinit {
-        deviceCache.removeDevice(cDevice)
-        SoapySDRDevice_unmake(cDevice)
+        queue.sync {
+            deviceCache.removeDevice(cDevice)
+            SoapySDRDevice_unmake(cDevice)
+        }
     }
 }
 

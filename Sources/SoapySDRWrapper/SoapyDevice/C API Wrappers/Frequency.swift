@@ -8,127 +8,143 @@
 import CSoapySDR
 
 extension SoapyDevice {
-    
+
     // --- Frequency API ---
     @discardableResult
     func setFrequency(direction: SoapyDirection, channel: Int, frequency: Double, args: SoapyKwargs? = nil) -> Int {
-        if var cArgs = args?.cKwargs {
-            return Int(SoapySDRDevice_setFrequency(
-                cDevice,
-                direction.rawValue,
-                numericCast(channel),
-                frequency,
-                &cArgs
-            ))
-        } else {
-            return Int(SoapySDRDevice_setFrequency(
-                cDevice,
-                direction.rawValue,
-                numericCast(channel),
-                frequency,
-                nil
-            ))
-        }
-    }
-    
-    @discardableResult
-    func setFrequencyComponent(direction: SoapyDirection, channel: Int, name: String, frequency: Double, args: SoapyKwargs? = nil) -> Int {
-        if var cArgs = args?.cKwargs {
-            return Int(SoapySDRDevice_setFrequencyComponent(
-                cDevice,
-                direction.rawValue,
-                numericCast(channel),
-                name,
-                frequency,
-                &cArgs
-            ))
-        } else {
-            return Int(SoapySDRDevice_setFrequencyComponent(
-                cDevice,
-                direction.rawValue,
-                numericCast(channel),
-                name,
-                frequency,
-                nil
-            ))
-        }
-    }
-    
-    func frequency(direction: SoapyDirection, channel: Int) -> Double {
-        SoapySDRDevice_getFrequency(cDevice, direction.rawValue, numericCast(channel))
-    }
-    
-    func frequencyComponent(direction: SoapyDirection, channel: Int, name: String) -> Double {
-        SoapySDRDevice_getFrequencyComponent(
-            cDevice,
-            direction.rawValue,
-            numericCast(channel),
-            name
-        )
-    }
-    
-    func frequencyElements(direction: SoapyDirection, channel: Int) -> [String] {
-        var length: size_t = 0
-        guard let list = SoapySDRDevice_listFrequencies(
-            cDevice,
-            direction.rawValue,
-            numericCast(channel),
-            &length
-        ) else { return [] }
-        
-        var result: [String] = []
-        for i in 0..<Int(length) {
-            if let ptr = list[i] {
-                result.append(String(cString: ptr))
-                SoapySDR_free(ptr)
+        queue.sync {
+            if var cArgs = args?.cKwargs {
+                return Int(SoapySDRDevice_setFrequency(
+                    cDevice,
+                    direction.rawValue,
+                    numericCast(channel),
+                    frequency,
+                    &cArgs
+                ))
+            } else {
+                return Int(SoapySDRDevice_setFrequency(
+                    cDevice,
+                    direction.rawValue,
+                    numericCast(channel),
+                    frequency,
+                    nil
+                ))
             }
         }
-        return result
     }
-    
+
+    @discardableResult
+    func setFrequencyComponent(direction: SoapyDirection, channel: Int, name: String, frequency: Double, args: SoapyKwargs? = nil) -> Int {
+        queue.sync {
+            if var cArgs = args?.cKwargs {
+                return Int(SoapySDRDevice_setFrequencyComponent(
+                    cDevice,
+                    direction.rawValue,
+                    numericCast(channel),
+                    name,
+                    frequency,
+                    &cArgs
+                ))
+            } else {
+                return Int(SoapySDRDevice_setFrequencyComponent(
+                    cDevice,
+                    direction.rawValue,
+                    numericCast(channel),
+                    name,
+                    frequency,
+                    nil
+                ))
+            }
+        }
+    }
+
+    func frequency(direction: SoapyDirection, channel: Int) -> Double {
+        queue.sync {
+            SoapySDRDevice_getFrequency(cDevice, direction.rawValue, numericCast(channel))
+        }
+    }
+
+    func frequencyComponent(direction: SoapyDirection, channel: Int, name: String) -> Double {
+        queue.sync {
+            SoapySDRDevice_getFrequencyComponent(
+                cDevice,
+                direction.rawValue,
+                numericCast(channel),
+                name
+            )
+        }
+    }
+
+    func frequencyElements(direction: SoapyDirection, channel: Int) -> [String] {
+        queue.sync {
+            var length: size_t = 0
+            guard let list = SoapySDRDevice_listFrequencies(
+                cDevice,
+                direction.rawValue,
+                numericCast(channel),
+                &length
+            ) else { return [] }
+
+            var result: [String] = []
+            for i in 0..<Int(length) {
+                if let ptr = list[i] {
+                    result.append(String(cString: ptr))
+                    SoapySDR_free(ptr)
+                }
+            }
+            return result
+        }
+    }
+
     func frequencyRange(direction: SoapyDirection, channel: Int) -> [SoapySDRRange] {
-        var length: size_t = 0
-        guard let ptr = SoapySDRDevice_getFrequencyRange(
-            cDevice,
-            direction.rawValue,
-            numericCast(channel),
-            &length
-        ) else { return [] }
-        
-        let buffer = UnsafeBufferPointer(start: ptr, count: Int(length))
-        let ranges = Array(buffer)
-        SoapySDR_free(ptr)
-        return ranges
+        queue.sync {
+            var length: size_t = 0
+            guard let ptr = SoapySDRDevice_getFrequencyRange(
+                cDevice,
+                direction.rawValue,
+                numericCast(channel),
+                &length
+            ) else { return [] }
+
+            let buffer = UnsafeBufferPointer(start: ptr, count: Int(length))
+            let ranges = Array(buffer)
+            SoapySDR_free(ptr)
+            return ranges
+        }
     }
-    
+
     func frequencyRange(direction: SoapyDirection, channel: Int, element name: String) -> [SoapySDRRange] {
-        var length: size_t = 0
-        guard let ptr = SoapySDRDevice_getFrequencyRangeComponent(
-            cDevice,
-            direction.rawValue,
-            numericCast(channel),
-            name,
-            &length
-        ) else { return [] }
-        
-        let buffer = UnsafeBufferPointer(start: ptr, count: Int(length))
-        let ranges = Array(buffer)
-        SoapySDR_free(ptr)
-        return ranges
+        queue.sync {
+            var length: size_t = 0
+            guard let ptr = SoapySDRDevice_getFrequencyRangeComponent(
+                cDevice,
+                direction.rawValue,
+                numericCast(channel),
+                name,
+                &length
+            ) else { return [] }
+
+            let buffer = UnsafeBufferPointer(start: ptr, count: Int(length))
+            let ranges = Array(buffer)
+            SoapySDR_free(ptr)
+            return ranges
+        }
     }
-    
+
     func frequencyArgsInfo(direction: SoapyDirection, channel: Int) -> [SoapySDRArgInfo] {
-        var length: size_t = 0
-        guard let ptr = SoapySDRDevice_getFrequencyArgsInfo(
-            cDevice,
-            direction.rawValue,
-            numericCast(channel),
-            &length
-        ) else { return [] }
-        let buffer = UnsafeBufferPointer(start: ptr, count: Int(length))
-        let info = Array(buffer)
-        // ArgInfoList_clear would invalidate copied structs; leak is preferable here.
-        return info
+        queue.sync {
+            var length: size_t = 0
+            guard let ptr = SoapySDRDevice_getFrequencyArgsInfo(
+                cDevice,
+                direction.rawValue,
+                numericCast(channel),
+                &length
+            ) else { return [] }
+            let buffer = UnsafeBufferPointer(start: ptr, count: Int(length))
+            let info = Array(buffer)
+            // ArgInfoList_clear would invalidate copied structs; leak is preferable here.
+            return info
+        }
     }
-    
+
 }

@@ -9,105 +9,131 @@ import CSoapySDR
 
 // --- GPIO ---
 extension SoapyDevice {
-    
+
     func gpioBanks() -> [String] {
-        var length: size_t = 0
-        guard let list = SoapySDRDevice_listGPIOBanks(cDevice, &length) else { return [] }
-        var result: [String] = []
-        for i in 0..<Int(length) {
-            if let ptr = list[i] {
-                result.append(String(cString: ptr))
-                SoapySDR_free(ptr)
+        queue.sync {
+            var length: size_t = 0
+            guard let list = SoapySDRDevice_listGPIOBanks(cDevice, &length) else { return [] }
+            var result: [String] = []
+            for i in 0..<Int(length) {
+                if let ptr = list[i] {
+                    result.append(String(cString: ptr))
+                    SoapySDR_free(ptr)
+                }
             }
+            return result
         }
-        return result
     }
-    
+
     func writeGPIO(bank: String, value: UInt32) -> Int {
-        Int(SoapySDRDevice_writeGPIO(cDevice, bank, value))
+        queue.sync {
+            Int(SoapySDRDevice_writeGPIO(cDevice, bank, value))
+        }
     }
-    
+
     func writeGPIOMasked(bank: String, value: UInt32, mask: UInt32) -> Int {
-        Int(SoapySDRDevice_writeGPIOMasked(cDevice, bank, value, mask))
+        queue.sync {
+            Int(SoapySDRDevice_writeGPIOMasked(cDevice, bank, value, mask))
+        }
     }
-    
+
     func readGPIO(bank: String) -> UInt32 {
-        SoapySDRDevice_readGPIO(cDevice, bank)
+        queue.sync {
+            SoapySDRDevice_readGPIO(cDevice, bank)
+        }
     }
-    
+
     func writeGPIODirection(bank: String, dir: UInt32) -> Int {
-        Int(SoapySDRDevice_writeGPIODir(cDevice, bank, dir))
+        queue.sync {
+            Int(SoapySDRDevice_writeGPIODir(cDevice, bank, dir))
+        }
     }
-    
+
     func writeGPIODirectionMasked(bank: String, dir: UInt32, mask: UInt32) -> Int {
-        Int(SoapySDRDevice_writeGPIODirMasked(cDevice, bank, dir, mask))
+        queue.sync {
+            Int(SoapySDRDevice_writeGPIODirMasked(cDevice, bank, dir, mask))
+        }
     }
-    
+
     func readGPIODirection(bank: String) -> UInt32 {
-        SoapySDRDevice_readGPIODir(cDevice, bank)
+        queue.sync {
+            SoapySDRDevice_readGPIODir(cDevice, bank)
+        }
     }
-    
+
 }
 
 // --- I2C ---
 extension SoapyDevice {
 
     func writeI2C(addr: Int32, data: [UInt8]) -> Int {
-        let mutable = data.map { Int8(bitPattern: $0) }
-        return Int(mutable.withUnsafeBufferPointer {
-            SoapySDRDevice_writeI2C(
-                cDevice,
-                addr,
-                UnsafePointer($0.baseAddress),
-                numericCast($0.count)
-            )
-        })
+        queue.sync {
+            let mutable = data.map { Int8(bitPattern: $0) }
+            return Int(mutable.withUnsafeBufferPointer {
+                SoapySDRDevice_writeI2C(
+                    cDevice,
+                    addr,
+                    UnsafePointer($0.baseAddress),
+                    numericCast($0.count)
+                )
+            })
+        }
     }
-    
+
     func readI2C(addr: Int32, numBytes: Int) -> [UInt8] {
-        var length: size_t = numericCast(numBytes)
-        guard let ptr = SoapySDRDevice_readI2C(cDevice, addr, &length) else { return [] }
-        let buffer = UnsafeBufferPointer(start: ptr, count: Int(length))
-        let result = buffer.map { UInt8(bitPattern: $0) }
-        SoapySDR_free(ptr)
-        return result
+        queue.sync {
+            var length: size_t = numericCast(numBytes)
+            guard let ptr = SoapySDRDevice_readI2C(cDevice, addr, &length) else { return [] }
+            let buffer = UnsafeBufferPointer(start: ptr, count: Int(length))
+            let result = buffer.map { UInt8(bitPattern: $0) }
+            SoapySDR_free(ptr)
+            return result
+        }
     }
-    
+
 }
 
 // --- SPI ---
 extension SoapyDevice {
-    
+
     func transactSPI(addr: Int32, data: UInt32, numBits: Int) -> UInt32 {
-        SoapySDRDevice_transactSPI(cDevice, addr, data, numericCast(numBits))
+        queue.sync {
+            SoapySDRDevice_transactSPI(cDevice, addr, data, numericCast(numBits))
+        }
     }
-    
+
 }
 
 // --- UART ---
 extension SoapyDevice {
 
     func uarts() -> [String] {
-        var length: size_t = 0
-        guard let list = SoapySDRDevice_listUARTs(cDevice, &length) else { return [] }
-        var result: [String] = []
-        for i in 0..<Int(length) {
-            if let ptr = list[i] {
-                result.append(String(cString: ptr))
-                SoapySDR_free(ptr)
+        queue.sync {
+            var length: size_t = 0
+            guard let list = SoapySDRDevice_listUARTs(cDevice, &length) else { return [] }
+            var result: [String] = []
+            for i in 0..<Int(length) {
+                if let ptr = list[i] {
+                    result.append(String(cString: ptr))
+                    SoapySDR_free(ptr)
+                }
             }
+            return result
         }
-        return result
     }
-    
+
     func writeUART(which: String, data: String) -> Int {
-        Int(SoapySDRDevice_writeUART(cDevice, which, data))
+        queue.sync {
+            Int(SoapySDRDevice_writeUART(cDevice, which, data))
+        }
     }
-    
+
     func readUART(which: String, timeoutUs: Int) -> String? {
-        guard let ptr = SoapySDRDevice_readUART(cDevice, which, timeoutUs) else { return nil }
-        defer { SoapySDR_free(ptr) }
-        return String(cString: ptr)
+        queue.sync {
+            guard let ptr = SoapySDRDevice_readUART(cDevice, which, timeoutUs) else { return nil }
+            defer { SoapySDR_free(ptr) }
+            return String(cString: ptr)
+        }
     }
-    
+
 }
