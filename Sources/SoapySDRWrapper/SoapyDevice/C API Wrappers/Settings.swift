@@ -32,24 +32,11 @@ extension SoapyDevice {
         return String(cString: ptr)
     }
     
-    func rxChannelSettingInfo(channel: Int) -> [SoapySDRArgInfo] {
+    func channelSettingInfo(direction: SoapyDirection, channel: Int) -> [SoapySDRArgInfo] {
         var length: size_t = 0
         guard let ptr = SoapySDRDevice_getChannelSettingInfo(
             cDevice,
-            SoapyDirection.rx.rawValue,
-            numericCast(channel),
-            &length
-        ) else { return [] }
-        let buffer = UnsafeBufferPointer(start: ptr, count: Int(length))
-        let info = Array(buffer)
-        return info
-    }
-    
-    func txChannelSettingInfo(channel: Int) -> [SoapySDRArgInfo] {
-        var length: size_t = 0
-        guard let ptr = SoapySDRDevice_getChannelSettingInfo(
-            cDevice,
-            SoapyDirection.tx.rawValue,
+            direction.rawValue,
             numericCast(channel),
             &length
         ) else { return [] }
@@ -76,41 +63,20 @@ extension SoapyDevice {
 //        )
 //    }
     
-    func writeRxChannelSetting(channel: Int, key: String, value: String) -> Int {
+    func writeChannelSetting(direction: SoapyDirection, channel: Int, key: String, value: String) -> Int {
         Int(SoapySDRDevice_writeChannelSetting(
             cDevice,
-            SoapyDirection.rx.rawValue,
+            direction.rawValue,
             numericCast(channel),
             key,
             value
         ))
     }
     
-    func writeTxChannelSetting(channel: Int, key: String, value: String) -> Int {
-        Int(SoapySDRDevice_writeChannelSetting(
-            cDevice,
-            SoapyDirection.tx.rawValue,
-            numericCast(channel),
-            key,
-            value
-        ))
-    }
-    
-    func readRxChannelSetting(channel: Int, key: String) -> String? {
+    func readChannelSetting(direction: SoapyDirection, channel: Int, key: String) -> String? {
         guard let ptr = SoapySDRDevice_readChannelSetting(
             cDevice,
-            SoapyDirection.rx.rawValue,
-            numericCast(channel),
-            key
-        ) else { return nil }
-        defer { SoapySDR_free(ptr) }
-        return String(cString: ptr)
-    }
-    
-    func readTxChannelSetting(channel: Int, key: String) -> String? {
-        guard let ptr = SoapySDRDevice_readChannelSetting(
-            cDevice,
-            SoapyDirection.tx.rawValue,
+            direction.rawValue,
             numericCast(channel),
             key
         ) else { return nil }

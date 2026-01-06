@@ -70,10 +70,11 @@ public class SoapyDevice {
 
         func buildChannelString(isRx: Bool, channel: Int) -> String {
             var str = ""
+            let direction: SoapyDirection = isRx ? .rx : .tx
             // --- General Info ---
             let info = isRx ? self.rxChannelInfo(channel: channel) : self.txChannelInfo(channel: channel)
             let isDuplex = isRx ? self.rxIsFullDuplex(channel: channel) : self.txIsFullDuplex(channel: channel)
-            let antennas = isRx ? self.rxAntennas(channel: channel) : self.txAntennas(channel: channel)
+            let antennas = self.antennas(direction: direction, channel: channel)
             
             if !info.description.isEmpty && info.description != "SoapyKwargs: empty" {
                 str += "    Info:         \(info.description)\n"
@@ -83,20 +84,20 @@ public class SoapyDevice {
 
             // --- Frequencies ---
             str += "  -- Frequency --\n"
-            let currentFreq = isRx ? self.rxFrequency(channel: channel) : self.txFrequency(channel: channel)
-            let ranges = isRx ? self.rxFrequencyRange(channel: channel) : self.txFrequencyRange(channel: channel)
+            let currentFreq = self.frequency(direction: direction, channel: channel)
+            let ranges = self.frequencyRange(direction: direction, channel: channel)
             
             str += "  Current:      \(Frequency(hz: currentFreq).description(unit: .mhz))\n"
             str += "  Range:        \(ranges.map { $0.descriptionWithFrequencyUnits }.joined(separator: " / "))\n"
             
-            let components = isRx ? self.rxFrequencyElements(channel: channel) : self.txFrequencyElements(channel: channel)
+            let components = self.frequencyElements(direction: direction, channel: channel)
             if !components.isEmpty {
                 str += "  Tunable Elements:\n"
                 let elementDict: [String: String] = ["CORR": "Correction", "RF": "RF Frontend", "BB": "Baseband"]
                 
                 for comp in components {
-                    let compFreq = isRx ? self.rxFrequencyComponent(channel: channel, name: comp) : self.txFrequencyComponent(channel: channel, name: comp)
-                    let compRanges = isRx ? self.rxFrequencyRange(channel: channel, element: comp) : self.txFrequencyRange(channel: channel, element: comp)
+                    let compFreq = self.frequencyComponent(direction: direction, channel: channel, name: comp)
+                    let compRanges = self.frequencyRange(direction: direction, channel: channel, element: comp)
                     let prettyName = elementDict[comp] ?? comp
                     if(prettyName == "Correction") {
                         str += "    * \(prettyName): \(compFreq) ppm\n"
@@ -115,20 +116,20 @@ public class SoapyDevice {
 
             // --- Gain ---
             str += "  -- Gain --\n"
-            let hasAgc = isRx ? self.rxHasGainMode(channel: channel) : self.txHasGainMode(channel: channel)
-            let agcEnabled = isRx ? self.rxGainMode(channel: channel) : self.txGainMode(channel: channel)
-            let totalGain = isRx ? self.rxGain(channel: channel) : self.txGain(channel: channel)
-            let totalRange = isRx ? self.rxGainRange(channel: channel) : self.txGainRange(channel: channel)
+            let hasAgc = self.hasGainMode(direction: direction, channel: channel)
+            let agcEnabled = self.gainMode(direction: direction, channel: channel)
+            let totalGain = self.gain(direction: direction, channel: channel)
+            let totalRange = self.gainRange(direction: direction, channel: channel)
             
             str += "  Mode:         \(hasAgc ? (agcEnabled ? "Automatic" : "Manual (AGC Supported)") : "Manual Only")\n"
             str += "  Total Gain:   \(totalGain) (Range: \(totalRange.description))\n"
             
-            let gainElements = isRx ? self.rxGainElements(channel: channel) : self.txGainElements(channel: channel)
+            let gainElements = self.gainElements(direction: direction, channel: channel)
             if !gainElements.isEmpty {
                 str += "  Elements:\n"
                 for element in gainElements {
-                    let elGain = isRx ? self.rxGain(channel: channel, element: element) : self.txGain(channel: channel, element: element)
-                    let elRange = isRx ? self.rxGainElementRange(channel: channel, element: element) : self.txGainElementRange(channel: channel, element: element)
+                    let elGain = self.gain(direction: direction, channel: channel, element: element)
+                    let elRange = self.gainElementRange(direction: direction, channel: channel, element: element)
                     str += "    * \(element): \(elGain) (Range: \(elRange.description))\n"
                 }
             }
@@ -136,10 +137,10 @@ public class SoapyDevice {
 
             // --- Sample Rate & Bandwidth ---
             str += "  -- Sample Rate & Bandwidth --\n"
-            let rate = isRx ? self.rxSampleRate(channel: channel) : self.txSampleRate(channel: channel)
-            let bw = isRx ? self.rxBandwidth(channel: channel) : self.txBandwidth(channel: channel)
-            let rateRanges = isRx ? self.rxSampleRateRanges(channel: channel) : self.txSampleRateRanges(channel: channel)
-            let bwRanges = isRx ? self.rxBandwidthRanges(channel: channel) : self.txBandwidthRanges(channel: channel)
+            let rate = self.sampleRate(direction: direction, channel: channel)
+            let bw = self.bandwidth(direction: direction, channel: channel)
+            let rateRanges = self.sampleRateRanges(direction: direction, channel: channel)
+            let bwRanges = self.bandwidthRanges(direction: direction, channel: channel)
             
             str += "  Rate:         \(rate)\n"
             str += "  Bandwidth:    \(Frequency(hz:bw).description(unit: .mhz)) (Range: \(bwRanges.map { $0.descriptionWithFrequencyUnits }.joined(separator: ", ")))\n"
@@ -153,20 +154,20 @@ public class SoapyDevice {
             str += "  -- Corrections --\n"
             
             // DC Offset
-            let hasDC = isRx ? self.rxHasDCOffset(channel: channel) : self.txHasDCOffset(channel: channel)
+            let hasDC = self.hasDCOffset(direction: direction, channel: channel)
             if hasDC {
-                let dcVal = isRx ? self.rxDCOffset(channel: channel) : self.txDCOffset(channel: channel)
-                let autoDC = isRx ? self.rxDCOffsetMode(channel: channel) : self.txDCOffsetMode(channel: channel)
+                let dcVal = self.dcOffset(direction: direction, channel: channel)
+                let autoDC = self.dcOffsetMode(direction: direction, channel: channel)
                 str += "  DC Offset:    \(autoDC ? "Automatic" : "Manual") -> \(String(describing: dcVal))\n"
             } else {
                 str += "  DC Offset:    Not Supported\n"
             }
             
             // IQ Balance
-            let hasIQ = isRx ? self.rxHasIQBalance(channel: channel) : self.txHasIQBalance(channel: channel)
+            let hasIQ = self.hasIQBalance(direction: direction, channel: channel)
             if hasIQ {
-                let iqVal = isRx ? self.rxIQBalance(channel: channel) : self.txIQBalance(channel: channel)
-                let autoIQ = isRx ? self.rxIQBalanceMode(channel: channel) : self.txIQBalanceMode(channel: channel)
+                let iqVal = self.iqBalance(direction: direction, channel: channel)
+                let autoIQ = self.iqBalanceMode(direction: direction, channel: channel)
                 str += "  IQ Balance:   \(autoIQ ? "Automatic" : "Manual") -> \(String(describing: iqVal))\n"
             } else {
                 str += "  IQ Balance:   Not Supported\n"
