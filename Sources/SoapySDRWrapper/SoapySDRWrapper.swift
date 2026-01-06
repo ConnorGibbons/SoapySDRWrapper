@@ -52,7 +52,7 @@ class SoapyDeviceCache: @unchecked Sendable {
 }
 let deviceCache = SoapyDeviceCache()
 
-enum SoapyProbe {
+public enum SoapyProbe {
     
     public static func listDevices() -> [SoapyKwargs] {
         let lengthPtr = UnsafeMutablePointer<Int>.allocate(capacity: 1)
