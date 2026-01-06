@@ -43,7 +43,7 @@ final class SoapySDRWrapperTests: XCTestCase {
     func testSoapyAsyncHandler() throws {
         // Parameters
         let readSeconds = 20.0
-        let sampleRate: Double = 2_400_000
+        let sampleRate: Double = 3_200_000
         
         let semQueue = DispatchQueue.init(label: "testAsyncQueue")
         

@@ -91,6 +91,9 @@ extension SoapyDevice {
         buffers.reserveCapacity(channelCount)
         for _ in 0..<channelCount {
             guard let ptr = getSampleBuffer(totalBytesPerChannel: totalBytesPerChannel) else {
+                for ptr in buffers {
+                    free(ptr)
+                }
                 return nil
             }
             buffers.append(ptr)
