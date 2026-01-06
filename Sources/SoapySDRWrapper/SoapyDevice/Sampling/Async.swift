@@ -317,6 +317,7 @@ public class SoapyAsyncHandler<T: SampleData>: AsyncHandler {
     private var streamFormat: String
     private var channelCount: Int
     private let streamMTU: Int // Not guaranteed to return this # of samples, but it's optimal to use it in readStream (supposedly)
+    private let buffers: [UnsafeMutableRawPointer?]
     var handlerIsActive: Bool
     
     public init(device: SoapyDevice, channels: [Int]) throws {
@@ -331,6 +332,17 @@ public class SoapyAsyncHandler<T: SampleData>: AsyncHandler {
         self.stream = device.rxSetupStream(channels: channels, format: nativeFormat)
         self.streamMTU = device.getStreamMTU(stream: stream)
         
+        guard let bytesPerChannel = getTotalBytesPerChannel(format: nativeFormat, numSamples: streamMTU) else {
+            print("SoapyAsyncHandler: Failed to get total bytes per channel.")
+            throw SoapyAsyncError.streamActivationFailed
+        }
+        var buffers: [UnsafeMutableRawPointer?] = []
+        for i in 0..<channelCount {
+            let bufferPointer = getSampleBuffer(totalBytesPerChannel: bytesPerChannel)
+            buffers.append(bufferPointer)
+        }
+        self.buffers = buffers
+        
         self.handlerIsActive = false
     }
     
@@ -341,7 +353,7 @@ public class SoapyAsyncHandler<T: SampleData>: AsyncHandler {
         
         readingQueue.async {
             while self.getHandlerIsActive() {
-                guard let (sampleData, flags, timestamp, sampleCount) = self.device.readStream(stream: self.stream, format: self.streamFormat, channelCount: self.channelCount, numSamples: self.streamMTU, timeoutMicroseconds: 1_000_000) else { self.stopAsyncRead(); break; }
+                guard let (sampleData, flags, timestamp, sampleCount) = self.device.readStream(stream: self.stream, format: self.streamFormat, channelCount: self.channelCount, numSamples: self.streamMTU, timeoutMicroseconds: 1_000_000, buffers: self.buffers) else { self.stopAsyncRead(); break; }
                 let asTArray: [[T]?] = sampleData.map { decode($0, format: self.streamFormat) }
                 if asTArray.contains(where: { $0 == nil }) { self.stopAsyncRead(); break; }
                 let asTArrayNoOptionals: [[T]] = asTArray.compactMap { $0 }
