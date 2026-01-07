@@ -50,7 +50,7 @@ public struct SoapyKwargs {
     }
     
     public var description: String {
-        guard dict.isEmpty else { return "(Empty SoapyKwargs)\n"}
+        guard !dict.isEmpty else { return "(Empty SoapyKwargs)\n"}
         var desc = "SoapyKwargs:\n"
         for (k, v) in dict {
             desc += "\(k) = \(v)\n"
