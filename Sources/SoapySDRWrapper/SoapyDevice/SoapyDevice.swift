@@ -20,6 +20,9 @@ public class SoapyDevice {
     }
     private var nextAsyncHandlerId: Int = 0
     var asyncHandlerDictionary: [Int: AsyncHandler] = [:]
+    public var isActive: Bool {
+        return !asyncHandlerDictionary.isEmpty
+    }
     
     // --- Native Handle ---
     public var nativeHandle: UnsafeMutableRawPointer? {
