@@ -10,7 +10,7 @@ import CSoapySDR
 extension SoapyDevice {
 
     // --- Settings API ---
-    func settingInfo() -> [SoapySDRArgInfo] {
+    public func settingInfo() -> [SoapySDRArgInfo] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_getSettingInfo(cDevice, &length) else { return [] }
@@ -24,13 +24,13 @@ extension SoapyDevice {
 //        SoapySDRDevice_getSettingInfoWithKey(cDevice, key)
 //    }
 
-    func writeSetting(key: String, value: String) -> Int {
+    public func writeSetting(key: String, value: String) -> Int {
         queue.sync {
             Int(SoapySDRDevice_writeSetting(cDevice, key, value))
         }
     }
 
-    func readSetting(_ key: String) -> String? {
+    public func readSetting(_ key: String) -> String? {
         queue.sync {
             guard let ptr = SoapySDRDevice_readSetting(cDevice, key) else { return nil }
             defer { SoapySDR_free(ptr) }
@@ -38,7 +38,7 @@ extension SoapyDevice {
         }
     }
 
-    func channelSettingInfo(direction: SoapyDirection, channel: Int) -> [SoapySDRArgInfo] {
+    public func channelSettingInfo(direction: SoapyDirection, channel: Int) -> [SoapySDRArgInfo] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_getChannelSettingInfo(
@@ -53,25 +53,7 @@ extension SoapyDevice {
         }
     }
 
-//    func rxChannelSettingInfo(channel: Int, key: String) -> SoapySDRArgInfo {
-//        SoapySDRDevice_getChannelSettingInfoWithKey(
-//            cDevice,
-//            SoapyDirection.rx.rawValue,
-//            numericCast(channel),
-//            key
-//        )
-//    }
-//
-//    func txChannelSettingInfo(channel: Int, key: String) -> SoapySDRArgInfo {
-//        SoapySDRDevice_getChannelSettingInfoWithKey(
-//            cDevice,
-//            SoapyDirection.tx.rawValue,
-//            numericCast(channel),
-//            key
-//        )
-//    }
-
-    func writeChannelSetting(direction: SoapyDirection, channel: Int, key: String, value: String) -> Int {
+    public func writeChannelSetting(direction: SoapyDirection, channel: Int, key: String, value: String) -> Int {
         queue.sync {
             Int(SoapySDRDevice_writeChannelSetting(
                 cDevice,
@@ -83,7 +65,7 @@ extension SoapyDevice {
         }
     }
 
-    func readChannelSetting(direction: SoapyDirection, channel: Int, key: String) -> String? {
+    public func readChannelSetting(direction: SoapyDirection, channel: Int, key: String) -> String? {
         queue.sync {
             guard let ptr = SoapySDRDevice_readChannelSetting(
                 cDevice,

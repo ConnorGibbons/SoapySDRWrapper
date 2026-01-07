@@ -11,7 +11,7 @@ extension SoapyDevice {
 
     // --- Bandwidth API ---
     @discardableResult
-    func setBandwidth(direction: SoapyDirection, channel: Int, bw: Double) -> Int {
+    public func setBandwidth(direction: SoapyDirection, channel: Int, bw: Double) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setBandwidth(
                 cDevice,
@@ -22,13 +22,13 @@ extension SoapyDevice {
         }
     }
 
-    func bandwidth(direction: SoapyDirection, channel: Int) -> Double {
+    public func bandwidth(direction: SoapyDirection, channel: Int) -> Double {
         queue.sync {
             SoapySDRDevice_getBandwidth(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
-    func bandwidths(direction: SoapyDirection, channel: Int) -> [Double] {
+    public func bandwidths(direction: SoapyDirection, channel: Int) -> [Double] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_listBandwidths(
@@ -44,7 +44,7 @@ extension SoapyDevice {
         }
     }
 
-    func bandwidthRanges(direction: SoapyDirection, channel: Int) -> [SoapySDRRange] {
+    public func bandwidthRanges(direction: SoapyDirection, channel: Int) -> [SoapySDRRange] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_getBandwidthRange(

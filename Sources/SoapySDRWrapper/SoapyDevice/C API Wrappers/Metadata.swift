@@ -9,7 +9,7 @@ import CSoapySDR
 extension SoapyDevice {
 
     // --- Device Metadata ---
-    var driverName: String? {
+    public var driverName: String? {
         queue.sync {
             guard let driverNamePtr = SoapySDRDevice_getDriverKey(cDevice) else { return nil }
             defer { SoapySDR_free(driverNamePtr) }
@@ -17,7 +17,7 @@ extension SoapyDevice {
         }
     }
 
-    var hardwareName: String? {
+    public var hardwareName: String? {
         queue.sync {
             guard let hardwareNamePtr = SoapySDRDevice_getHardwareKey(cDevice) else { return nil }
             defer { SoapySDR_free(hardwareNamePtr) }
@@ -25,7 +25,7 @@ extension SoapyDevice {
         }
     }
 
-    var hardwareKwargs: SoapyKwargs {
+    public var hardwareKwargs: SoapyKwargs {
         queue.sync {
             return SoapyKwargs(cKwargs: SoapySDRDevice_getHardwareInfo(cDevice))
         }

@@ -10,7 +10,7 @@ import CSoapySDR
 extension SoapyDevice {
 
     // --- Sensor API ---
-    func sensors() -> [String] {
+    public func sensors() -> [String] {
         queue.sync {
             var length: size_t = 0
             guard let list = SoapySDRDevice_listSensors(cDevice, &length) else { return [] }
@@ -25,13 +25,13 @@ extension SoapyDevice {
         }
     }
 
-    func sensorInfo(_ key: String) -> SoapySDRArgInfo {
+    public func sensorInfo(_ key: String) -> SoapySDRArgInfo {
         queue.sync {
             SoapySDRDevice_getSensorInfo(cDevice, key)
         }
     }
 
-    func readSensor(_ key: String) -> String? {
+    public func readSensor(_ key: String) -> String? {
         queue.sync {
             guard let ptr = SoapySDRDevice_readSensor(cDevice, key) else { return nil }
             defer { SoapySDR_free(ptr) }
@@ -39,7 +39,7 @@ extension SoapyDevice {
         }
     }
 
-    func channelSensors(direction: SoapyDirection, channel: Int) -> [String] {
+    public func channelSensors(direction: SoapyDirection, channel: Int) -> [String] {
         queue.sync {
             var length: size_t = 0
             guard let list = SoapySDRDevice_listChannelSensors(
@@ -59,7 +59,7 @@ extension SoapyDevice {
         }
     }
 
-    func channelSensorInfo(direction: SoapyDirection, channel: Int, key: String) -> SoapySDRArgInfo {
+    public func channelSensorInfo(direction: SoapyDirection, channel: Int, key: String) -> SoapySDRArgInfo {
         queue.sync {
             SoapySDRDevice_getChannelSensorInfo(
                 cDevice,
@@ -70,7 +70,7 @@ extension SoapyDevice {
         }
     }
 
-    func readChannelSensor(direction: SoapyDirection, channel: Int, key: String) -> String? {
+    public func readChannelSensor(direction: SoapyDirection, channel: Int, key: String) -> String? {
         queue.sync {
             guard let ptr = SoapySDRDevice_readChannelSensor(
                 cDevice,

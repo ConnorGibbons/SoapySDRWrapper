@@ -11,19 +11,19 @@ extension SoapyDevice {
 
     // --- Clocking API ---
     @discardableResult
-    func setMasterClockRate(_ rate: Double) -> Int {
+    public func setMasterClockRate(_ rate: Double) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setMasterClockRate(cDevice, rate))
         }
     }
 
-    var masterClockRate: Double {
+    public var masterClockRate: Double {
         queue.sync {
             SoapySDRDevice_getMasterClockRate(cDevice)
         }
     }
 
-    func masterClockRateRanges() -> [SoapySDRRange] {
+    public func masterClockRateRanges() -> [SoapySDRRange] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_getMasterClockRates(cDevice, &length) else { return [] }
@@ -35,19 +35,19 @@ extension SoapyDevice {
     }
 
     @discardableResult
-    func setReferenceClockRate(_ rate: Double) -> Int {
+    public func setReferenceClockRate(_ rate: Double) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setReferenceClockRate(cDevice, rate))
         }
     }
 
-    var referenceClockRate: Double {
+    public var referenceClockRate: Double {
         queue.sync {
             SoapySDRDevice_getReferenceClockRate(cDevice)
         }
     }
 
-    func referenceClockRateRanges() -> [SoapySDRRange] {
+    public func referenceClockRateRanges() -> [SoapySDRRange] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_getReferenceClockRates(cDevice, &length) else { return [] }
@@ -58,7 +58,7 @@ extension SoapyDevice {
         }
     }
 
-    func clockSources() -> [String] {
+    public func clockSources() -> [String] {
         queue.sync {
             var length: size_t = 0
             guard let list = SoapySDRDevice_listClockSources(cDevice, &length) else { return [] }
@@ -74,13 +74,13 @@ extension SoapyDevice {
     }
 
     @discardableResult
-    func setClockSource(_ source: String) -> Int {
+    public func setClockSource(_ source: String) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setClockSource(cDevice, source))
         }
     }
 
-    var clockSource: String? {
+    public var clockSource: String? {
         queue.sync {
             guard let ptr = SoapySDRDevice_getClockSource(cDevice) else { return nil }
             defer { SoapySDR_free(ptr) }

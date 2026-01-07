@@ -11,7 +11,7 @@ import CSoapySDR
 
 extension SoapyDevice {
     
-    func rxChannelStreamFormats(channel: Int) -> [String] {
+    public func rxChannelStreamFormats(channel: Int) -> [String] {
         queue.sync {
             var length: size_t = 0
             guard let list = SoapySDRDevice_getStreamFormats(self.cDevice, SoapyDirection.rx.rawValue, channel, &length) else { return [] }
@@ -26,7 +26,7 @@ extension SoapyDevice {
         }
     }
     
-    func rxChannelStreamNativeFormat(channel: Int) -> String? {
+    public func rxChannelStreamNativeFormat(channel: Int) -> String? {
         queue.sync {
             var fullScale: CDouble = 0 // Could be useful in the future, but doing nothing with it for now
             guard let nativeFormat = SoapySDRDevice_getNativeStreamFormat(self.cDevice, SoapyDirection.rx.rawValue, channel, &fullScale) else { return nil }
@@ -34,7 +34,7 @@ extension SoapyDevice {
         }
     }
     
-    func rxChannelStreamArgumentsInfo(channel: Int) -> [SoapySDRArgInfo] {
+    public func rxChannelStreamArgumentsInfo(channel: Int) -> [SoapySDRArgInfo] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_getStreamArgsInfo(self.cDevice, SoapyDirection.rx.rawValue, channel, &length) else { return [] }
@@ -44,7 +44,7 @@ extension SoapyDevice {
         }
     }
     
-    func rxSetupStream(channels: [Int], format: String, args: SoapySDRKwargs = SoapySDRKwargs()) -> OpaquePointer {
+    public func rxSetupStream(channels: [Int], format: String, args: SoapySDRKwargs = SoapySDRKwargs()) -> OpaquePointer {
         queue.sync {
             channels.withUnsafeBufferPointer { channelPtr in
                 var kwargs = args
@@ -54,13 +54,13 @@ extension SoapyDevice {
         }
     }
     
-    func getStreamMTU(stream: OpaquePointer) -> Int {
+    public func getStreamMTU(stream: OpaquePointer) -> Int {
         queue.sync {
             return SoapySDRDevice_getStreamMTU(self.cDevice, stream)
         }
     }
     
-    func closeStream(stream: OpaquePointer) -> Bool {
+    public func closeStream(stream: OpaquePointer) -> Bool {
         queue.sync {
             let result = SoapySDRDevice_closeStream(self.cDevice, stream)
             if result != 0 {
@@ -71,7 +71,7 @@ extension SoapyDevice {
         }
     }
     
-    func activateStream(stream: OpaquePointer, flags: Int, timeNanoseconds: Int, numElements: Int? = nil) -> Bool {
+    public func activateStream(stream: OpaquePointer, flags: Int, timeNanoseconds: Int, numElements: Int? = nil) -> Bool {
         queue.sync {
             let result = SoapySDRDevice_activateStream(self.cDevice, stream, Int32(flags), Int64(timeNanoseconds), numElements ?? 0)
             if result != 0 {
@@ -82,7 +82,7 @@ extension SoapyDevice {
         }
     }
     
-    func deactivateStream(stream: OpaquePointer, flags: Int, timeNanoseconds: Int) -> Bool {
+    public func deactivateStream(stream: OpaquePointer, flags: Int, timeNanoseconds: Int) -> Bool {
         queue.sync {
             let result = SoapySDRDevice_deactivateStream(self.cDevice, stream, Int32(flags), Int64(timeNanoseconds))
             if result != 0 {
@@ -93,9 +93,9 @@ extension SoapyDevice {
         }
     }
     
-    func readStream(stream: OpaquePointer, format: String, channelCount: Int,  numSamples: Int, timeoutMicroseconds: Int) -> ([Data], Int32, Int64, Int32)? {
-        let returnedFlags = getMutablePointerForValue(value: Int32(0))
-        let bufferTimestamp = getMutablePointerForValue(value: Int64(0))
+    public func readStream(stream: OpaquePointer, format: String, channelCount: Int,  numSamples: Int, timeoutMicroseconds: Int) -> ([Data], Int32, Int64, Int32)? {
+        let returnedFlags = getMutablePointerForValue(value: Int32(0)); defer { returnedFlags.deallocate() }
+        let bufferTimestamp = getMutablePointerForValue(value: Int64(0)); defer { bufferTimestamp.deallocate() }
         
         guard let totalBytesPerChannel = getTotalBytesPerChannel(format: format, numSamples: numSamples) else {
             print("SoapySDRDevice: Error reading stream, couldn't get total # of bytes per channel.")
@@ -140,9 +140,9 @@ extension SoapyDevice {
     
     /// Seperate version of readStream for high-throughput use allowing for 'buffers' to be reused across calls.
     /// Ensure that buffers is of size = channelCount, and each buffer contained has at least enough space for numSamples of the provided format.
-    func readStream(stream: OpaquePointer, format: String, channelCount: Int, numSamples: Int, timeoutMicroseconds: Int, buffers: [UnsafeMutableRawPointer?]) -> ([Data], Int32, Int64, Int32)? {
-        let returnedFlags = getMutablePointerForValue(value: Int32(0))
-        let bufferTimestamp = getMutablePointerForValue(value: Int64(0))
+    public func readStream(stream: OpaquePointer, format: String, channelCount: Int, numSamples: Int, timeoutMicroseconds: Int, buffers: [UnsafeMutableRawPointer?]) -> ([Data], Int32, Int64, Int32)? {
+        let returnedFlags = getMutablePointerForValue(value: Int32(0)); defer { returnedFlags.deallocate() }
+        let bufferTimestamp = getMutablePointerForValue(value: Int64(0)); defer { bufferTimestamp.deallocate() }
         
         guard let totalBytesPerChannel = getTotalBytesPerChannel(format: format, numSamples: numSamples) else {
             print("SoapySDRDevice: Error reading stream, couldn't get total # of bytes per channel.")

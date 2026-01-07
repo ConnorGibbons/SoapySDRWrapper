@@ -10,7 +10,7 @@ import CSoapySDR
 extension SoapyDevice {
 
     // --- Gain API ---
-    func gainElements(direction: SoapyDirection, channel: Int) -> [String] {
+    public func gainElements(direction: SoapyDirection, channel: Int) -> [String] {
         queue.sync {
             var length: size_t = 0
             guard let list = SoapySDRDevice_listGains(
@@ -31,14 +31,14 @@ extension SoapyDevice {
         }
     }
 
-    func hasGainMode(direction: SoapyDirection, channel: Int) -> Bool {
+    public func hasGainMode(direction: SoapyDirection, channel: Int) -> Bool {
         queue.sync {
             SoapySDRDevice_hasGainMode(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
     @discardableResult
-    func setGainMode(direction: SoapyDirection, channel: Int, automatic: Bool) -> Int {
+    public func setGainMode(direction: SoapyDirection, channel: Int, automatic: Bool) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setGainMode(
                 cDevice,
@@ -49,14 +49,14 @@ extension SoapyDevice {
         }
     }
 
-    func gainMode(direction: SoapyDirection, channel: Int) -> Bool {
+    public func gainMode(direction: SoapyDirection, channel: Int) -> Bool {
         queue.sync {
             SoapySDRDevice_getGainMode(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
     @discardableResult
-    func setGain(direction: SoapyDirection, channel: Int, value: Double) -> Int {
+    public func setGain(direction: SoapyDirection, channel: Int, value: Double) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setGain(
                 cDevice,
@@ -68,7 +68,7 @@ extension SoapyDevice {
     }
 
     @discardableResult
-    func setGain(direction: SoapyDirection, channel: Int, element name: String, value: Double) -> Int {
+    public func setGain(direction: SoapyDirection, channel: Int, element name: String, value: Double) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setGainElement(
                 cDevice,
@@ -80,13 +80,13 @@ extension SoapyDevice {
         }
     }
 
-    func gain(direction: SoapyDirection, channel: Int) -> Double {
+    public func gain(direction: SoapyDirection, channel: Int) -> Double {
         queue.sync {
             SoapySDRDevice_getGain(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
-    func gain(direction: SoapyDirection, channel: Int, element name: String) -> Double {
+    public func gain(direction: SoapyDirection, channel: Int, element name: String) -> Double {
         queue.sync {
             SoapySDRDevice_getGainElement(
                 cDevice,
@@ -97,13 +97,13 @@ extension SoapyDevice {
         }
     }
 
-    func gainRange(direction: SoapyDirection, channel: Int) -> SoapySDRRange {
+    public func gainRange(direction: SoapyDirection, channel: Int) -> SoapySDRRange {
         queue.sync {
             SoapySDRDevice_getGainRange(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
-    func gainElementRange(direction: SoapyDirection, channel: Int, element name: String) -> SoapySDRRange {
+    public func gainElementRange(direction: SoapyDirection, channel: Int, element name: String) -> SoapySDRRange {
         queue.sync {
             SoapySDRDevice_getGainElementRange(
                 cDevice,

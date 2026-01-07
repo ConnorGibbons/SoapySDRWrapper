@@ -10,7 +10,7 @@ import CSoapySDR
 extension SoapyDevice {
 
     // --- Register API ---
-    func registerInterfaces() -> [String] {
+    public func registerInterfaces() -> [String] {
         queue.sync {
             var length: size_t = 0
             guard let list = SoapySDRDevice_listRegisterInterfaces(cDevice, &length) else { return [] }
@@ -25,19 +25,19 @@ extension SoapyDevice {
         }
     }
 
-    func writeRegister(interface name: String, addr: UInt32, value: UInt32) -> Int {
+    public func writeRegister(interface name: String, addr: UInt32, value: UInt32) -> Int {
         queue.sync {
             Int(SoapySDRDevice_writeRegister(cDevice, name, addr, value))
         }
     }
 
-    func readRegister(interface name: String, addr: UInt32) -> UInt32 {
+    public func readRegister(interface name: String, addr: UInt32) -> UInt32 {
         queue.sync {
             SoapySDRDevice_readRegister(cDevice, name, addr)
         }
     }
 
-    func writeRegisters(interface name: String, addr: UInt32, values: [UInt32]) -> Int {
+    public func writeRegisters(interface name: String, addr: UInt32, values: [UInt32]) -> Int {
         queue.sync {
             var valuesCopy = values
             return Int(valuesCopy.withUnsafeMutableBufferPointer {
@@ -52,7 +52,7 @@ extension SoapyDevice {
         }
     }
 
-    func readRegisters(interface name: String, addr: UInt32, count: Int) -> [UInt32] {
+    public func readRegisters(interface name: String, addr: UInt32, count: Int) -> [UInt32] {
         queue.sync {
             var length: size_t = numericCast(count)
             guard let ptr = SoapySDRDevice_readRegisters(

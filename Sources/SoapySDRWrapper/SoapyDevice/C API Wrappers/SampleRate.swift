@@ -11,7 +11,7 @@ extension SoapyDevice {
 
     // --- Sample Rate API ---
     @discardableResult
-    func setSampleRate(direction: SoapyDirection, channel: Int, rate: Double) -> Int {
+    public func setSampleRate(direction: SoapyDirection, channel: Int, rate: Double) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setSampleRate(
                 cDevice,
@@ -22,14 +22,14 @@ extension SoapyDevice {
         }
     }
 
-    func sampleRate(direction: SoapyDirection, channel: Int) -> Double {
+    public func sampleRate(direction: SoapyDirection, channel: Int) -> Double {
         queue.sync {
             SoapySDRDevice_getSampleRate(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
     /// Might get rid of this -- SoapySDR device.h marks it as "deprecated"
-    func sampleRates(direction: SoapyDirection, channel: Int) -> [Double] {
+    public func sampleRates(direction: SoapyDirection, channel: Int) -> [Double] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_listSampleRates(
@@ -45,7 +45,7 @@ extension SoapyDevice {
         }
     }
 
-    func sampleRateRanges(direction: SoapyDirection, channel: Int) -> [SoapySDRRange] {
+    public func sampleRateRanges(direction: SoapyDirection, channel: Int) -> [SoapySDRRange] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_getSampleRateRange(

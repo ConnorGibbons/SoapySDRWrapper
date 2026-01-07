@@ -12,14 +12,14 @@ extension SoapyDevice {
     // --- Frontend Corrections API ---
 
     /// Returns 'true' if automatic DC offset mode is supported by the device for this channel.
-    func hasDCOffsetMode(direction: SoapyDirection, channel: Int) -> Bool {
+    public func hasDCOffsetMode(direction: SoapyDirection, channel: Int) -> Bool {
         queue.sync {
             SoapySDRDevice_hasDCOffsetMode(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
     @discardableResult
-    func setDCOffsetMode(direction: SoapyDirection, channel: Int, automatic: Bool) -> Int {
+    public func setDCOffsetMode(direction: SoapyDirection, channel: Int, automatic: Bool) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setDCOffsetMode(
                 cDevice,
@@ -30,20 +30,20 @@ extension SoapyDevice {
         }
     }
 
-    func dcOffsetMode(direction: SoapyDirection, channel: Int) -> Bool {
+    public func dcOffsetMode(direction: SoapyDirection, channel: Int) -> Bool {
         queue.sync {
             SoapySDRDevice_getDCOffsetMode(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
-    func hasDCOffset(direction: SoapyDirection, channel: Int) -> Bool {
+    public func hasDCOffset(direction: SoapyDirection, channel: Int) -> Bool {
         queue.sync {
             SoapySDRDevice_hasDCOffset(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
     @discardableResult
-    func setDCOffset(direction: SoapyDirection, channel: Int, offsetI: Double, offsetQ: Double) -> Int {
+    public func setDCOffset(direction: SoapyDirection, channel: Int, offsetI: Double, offsetQ: Double) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setDCOffset(
                 cDevice,
@@ -55,7 +55,7 @@ extension SoapyDevice {
         }
     }
 
-    func dcOffset(direction: SoapyDirection, channel: Int) -> (offsetI: Double, offsetQ: Double)? {
+    public func dcOffset(direction: SoapyDirection, channel: Int) -> (offsetI: Double, offsetQ: Double)? {
         queue.sync {
             var i: Double = 0
             var q: Double = 0
@@ -71,14 +71,14 @@ extension SoapyDevice {
         }
     }
 
-    func hasIQBalance(direction: SoapyDirection, channel: Int) -> Bool {
+    public func hasIQBalance(direction: SoapyDirection, channel: Int) -> Bool {
         queue.sync {
             SoapySDRDevice_hasIQBalance(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
     @discardableResult
-    func setIQBalance(direction: SoapyDirection, channel: Int, balanceI: Double, balanceQ: Double) -> Int {
+    public func setIQBalance(direction: SoapyDirection, channel: Int, balanceI: Double, balanceQ: Double) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setIQBalance(
                 cDevice,
@@ -90,7 +90,7 @@ extension SoapyDevice {
         }
     }
 
-    func iqBalance(direction: SoapyDirection, channel: Int) -> (balanceI: Double, balanceQ: Double)? {
+    public func iqBalance(direction: SoapyDirection, channel: Int) -> (balanceI: Double, balanceQ: Double)? {
         queue.sync {
             var i: Double = 0
             var q: Double = 0
@@ -106,14 +106,14 @@ extension SoapyDevice {
         }
     }
 
-    func hasIQBalanceMode(direction: SoapyDirection, channel: Int) -> Bool {
+    public func hasIQBalanceMode(direction: SoapyDirection, channel: Int) -> Bool {
         queue.sync {
             SoapySDRDevice_hasIQBalanceMode(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
     @discardableResult
-    func setIQBalanceMode(direction: SoapyDirection, channel: Int, automatic: Bool) -> Int {
+    public func setIQBalanceMode(direction: SoapyDirection, channel: Int, automatic: Bool) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setIQBalanceMode(
                 cDevice,
@@ -124,20 +124,20 @@ extension SoapyDevice {
         }
     }
 
-    func iqBalanceMode(direction: SoapyDirection, channel: Int) -> Bool {
+    public func iqBalanceMode(direction: SoapyDirection, channel: Int) -> Bool {
         queue.sync {
             SoapySDRDevice_getIQBalanceMode(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
-    func hasFrequencyCorrection(direction: SoapyDirection, channel: Int) -> Bool {
+    public func hasFrequencyCorrection(direction: SoapyDirection, channel: Int) -> Bool {
         queue.sync {
             SoapySDRDevice_hasFrequencyCorrection(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
     @discardableResult
-    func setFrequencyCorrection(direction: SoapyDirection, channel: Int, ppm: Double) -> Int {
+    public func setFrequencyCorrection(direction: SoapyDirection, channel: Int, ppm: Double) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setFrequencyCorrection(
                 cDevice,
@@ -148,7 +148,7 @@ extension SoapyDevice {
         }
     }
 
-    func frequencyCorrection(direction: SoapyDirection, channel: Int) -> Double {
+    public func frequencyCorrection(direction: SoapyDirection, channel: Int) -> Double {
         queue.sync {
             SoapySDRDevice_getFrequencyCorrection(cDevice, direction.rawValue, numericCast(channel))
         }

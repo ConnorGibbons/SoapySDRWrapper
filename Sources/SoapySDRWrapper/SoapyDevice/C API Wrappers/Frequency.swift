@@ -11,7 +11,7 @@ extension SoapyDevice {
 
     // --- Frequency API ---
     @discardableResult
-    func setFrequency(direction: SoapyDirection, channel: Int, frequency: Double, args: SoapyKwargs? = nil) -> Int {
+    public func setFrequency(direction: SoapyDirection, channel: Int, frequency: Double, args: SoapyKwargs? = nil) -> Int {
         queue.sync {
             if var cArgs = args?.cKwargs {
                 return Int(SoapySDRDevice_setFrequency(
@@ -34,7 +34,7 @@ extension SoapyDevice {
     }
 
     @discardableResult
-    func setFrequencyComponent(direction: SoapyDirection, channel: Int, name: String, frequency: Double, args: SoapyKwargs? = nil) -> Int {
+    public func setFrequencyComponent(direction: SoapyDirection, channel: Int, name: String, frequency: Double, args: SoapyKwargs? = nil) -> Int {
         queue.sync {
             if var cArgs = args?.cKwargs {
                 return Int(SoapySDRDevice_setFrequencyComponent(
@@ -58,13 +58,13 @@ extension SoapyDevice {
         }
     }
 
-    func frequency(direction: SoapyDirection, channel: Int) -> Double {
+    public func frequency(direction: SoapyDirection, channel: Int) -> Double {
         queue.sync {
             SoapySDRDevice_getFrequency(cDevice, direction.rawValue, numericCast(channel))
         }
     }
 
-    func frequencyComponent(direction: SoapyDirection, channel: Int, name: String) -> Double {
+    public func frequencyComponent(direction: SoapyDirection, channel: Int, name: String) -> Double {
         queue.sync {
             SoapySDRDevice_getFrequencyComponent(
                 cDevice,
@@ -75,7 +75,7 @@ extension SoapyDevice {
         }
     }
 
-    func frequencyElements(direction: SoapyDirection, channel: Int) -> [String] {
+    public func frequencyElements(direction: SoapyDirection, channel: Int) -> [String] {
         queue.sync {
             var length: size_t = 0
             guard let list = SoapySDRDevice_listFrequencies(
@@ -96,7 +96,7 @@ extension SoapyDevice {
         }
     }
 
-    func frequencyRange(direction: SoapyDirection, channel: Int) -> [SoapySDRRange] {
+    public func frequencyRange(direction: SoapyDirection, channel: Int) -> [SoapySDRRange] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_getFrequencyRange(
@@ -113,7 +113,7 @@ extension SoapyDevice {
         }
     }
 
-    func frequencyRange(direction: SoapyDirection, channel: Int, element name: String) -> [SoapySDRRange] {
+    public func frequencyRange(direction: SoapyDirection, channel: Int, element name: String) -> [SoapySDRRange] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_getFrequencyRangeComponent(
@@ -131,7 +131,7 @@ extension SoapyDevice {
         }
     }
 
-    func frequencyArgsInfo(direction: SoapyDirection, channel: Int) -> [SoapySDRArgInfo] {
+    public func frequencyArgsInfo(direction: SoapyDirection, channel: Int) -> [SoapySDRArgInfo] {
         queue.sync {
             var length: size_t = 0
             guard let ptr = SoapySDRDevice_getFrequencyArgsInfo(

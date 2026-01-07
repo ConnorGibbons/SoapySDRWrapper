@@ -10,7 +10,7 @@ import CSoapySDR
 extension SoapyDevice {
 
     // --- Device RX/TX Capabilities ---
-    var rxFrontendMapping: String? {
+    public var rxFrontendMapping: String? {
         queue.sync {
             guard let mappingPtr = SoapySDRDevice_getFrontendMapping(cDevice, SoapyDirection.rx.rawValue) else {
                 return nil
@@ -20,7 +20,7 @@ extension SoapyDevice {
         }
     }
 
-    var txFrontendMapping: String? {
+    public var txFrontendMapping: String? {
         queue.sync {
             guard let mappingPtr = SoapySDRDevice_getFrontendMapping(cDevice, SoapyDirection.tx.rawValue) else {
                 return nil
@@ -40,19 +40,19 @@ extension SoapyDevice {
 //        Int(SoapySDRDevice_setFrontendMapping(cDevice, SoapyDirection.tx.rawValue, mapping))
 //    }
 
-    var rxNumChannels: Int {
+    public var rxNumChannels: Int {
         queue.sync {
             Int(SoapySDRDevice_getNumChannels(cDevice, SoapyDirection.rx.rawValue))
         }
     }
 
-    var txNumChannels: Int {
+    public var txNumChannels: Int {
         queue.sync {
             Int(SoapySDRDevice_getNumChannels(cDevice, SoapyDirection.tx.rawValue))
         }
     }
 
-    func rxChannelInfo(channel: Int) -> SoapyKwargs {
+    public func rxChannelInfo(channel: Int) -> SoapyKwargs {
         queue.sync {
             let info = SoapySDRDevice_getChannelInfo(
                 cDevice,
@@ -63,7 +63,7 @@ extension SoapyDevice {
         }
     }
 
-    func txChannelInfo(channel: Int) -> SoapyKwargs {
+    public func txChannelInfo(channel: Int) -> SoapyKwargs {
         queue.sync {
             let info = SoapySDRDevice_getChannelInfo(
                 cDevice,
@@ -74,7 +74,7 @@ extension SoapyDevice {
         }
     }
 
-    func rxIsFullDuplex(channel: Int) -> Bool {
+    public func rxIsFullDuplex(channel: Int) -> Bool {
         queue.sync {
             SoapySDRDevice_getFullDuplex(
                 cDevice,
@@ -84,7 +84,7 @@ extension SoapyDevice {
         }
     }
 
-    func txIsFullDuplex(channel: Int) -> Bool {
+    public func txIsFullDuplex(channel: Int) -> Bool {
         queue.sync {
             SoapySDRDevice_getFullDuplex(
                 cDevice,

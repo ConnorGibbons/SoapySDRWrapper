@@ -7,22 +7,22 @@
 import Foundation
 import CSoapySDR
 
-enum SoapyDirection: Int32 {
+public enum SoapyDirection: Int32 {
     case rx = 1
     case tx = 0
 }
 
-enum SoapySDRWrapperErrors: Error {
+public enum SoapySDRWrapperErrors: Error {
     case deviceInitFailed
 }
 
-extension SoapySDRRange {
-    var description: String {
+public extension SoapySDRRange {
+    public var description: String {
         "Min: \(self.minimum), Max: \(self.maximum), Step: \(self.step)"
     }
     
     /// Useful for presentation if the range is describing values in Hz.
-    var descriptionWithFrequencyUnits: String {
+    public var descriptionWithFrequencyUnits: String {
         let minAsFrequency = Frequency(hz: self.minimum)
         let maxAsFrequency = Frequency(hz: self.maximum)
         let stepAsFrequency = Frequency(hz: self.step)
@@ -96,7 +96,7 @@ public struct Frequency: Equatable {
         
         return "\(String(format: "%.4f", getAsUnit(unit))) \(unitString)"
     }
-    
+
     public static func == (lhs: Frequency, rhs: Frequency) -> Bool {
         return lhs.hz == rhs.hz
     }

@@ -10,7 +10,7 @@ import CSoapySDR
 extension SoapyDevice {
 
     // --- Antenna API ---
-    func antennas(direction: SoapyDirection, channel: Int) -> [String] {
+    public func antennas(direction: SoapyDirection, channel: Int) -> [String] {
         queue.sync {
             var length: size_t = 0
             guard let list = SoapySDRDevice_listAntennas(
@@ -33,7 +33,7 @@ extension SoapyDevice {
     }
 
     @discardableResult
-    func setAntenna(direction: SoapyDirection, channel: Int, name: String) -> Int {
+    public func setAntenna(direction: SoapyDirection, channel: Int, name: String) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setAntenna(
                 cDevice,
@@ -44,7 +44,7 @@ extension SoapyDevice {
         }
     }
 
-    func antenna(direction: SoapyDirection, channel: Int) -> String? {
+    public func antenna(direction: SoapyDirection, channel: Int) -> String? {
         queue.sync {
             guard let ptr = SoapySDRDevice_getAntenna(
                 cDevice,

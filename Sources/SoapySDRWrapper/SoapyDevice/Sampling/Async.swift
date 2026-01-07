@@ -37,6 +37,7 @@ extension SoapyDevice {
     }
     
 }
+
 public protocol SampleData {
     static func arrayFrom(_ floats: [Float]) -> [Self]?
     static func arrayFrom(_ doubles: [Double]) -> [Self]?

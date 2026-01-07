@@ -10,7 +10,7 @@ import CSoapySDR
 extension SoapyDevice {
 
     // --- Time API ---
-    func timeSources() -> [String] {
+    public func timeSources() -> [String] {
         queue.sync {
             var length: size_t = 0
             guard let list = SoapySDRDevice_listTimeSources(cDevice, &length) else { return [] }
@@ -26,13 +26,13 @@ extension SoapyDevice {
     }
 
     @discardableResult
-    func setTimeSource(_ source: String) -> Int {
+    public func setTimeSource(_ source: String) -> Int {
         queue.sync {
             Int(SoapySDRDevice_setTimeSource(cDevice, source))
         }
     }
 
-    var timeSource: String? {
+    public var timeSource: String? {
         queue.sync {
             guard let ptr = SoapySDRDevice_getTimeSource(cDevice) else { return nil }
             defer { SoapySDR_free(ptr) }
@@ -40,7 +40,7 @@ extension SoapyDevice {
         }
     }
 
-    func hasHardwareTime(what: String? = nil) -> Bool {
+    public func hasHardwareTime(what: String? = nil) -> Bool {
         queue.sync {
             if let what = what {
                 return SoapySDRDevice_hasHardwareTime(cDevice, what)
@@ -50,7 +50,7 @@ extension SoapyDevice {
         }
     }
 
-    func hardwareTime(what: String? = nil) -> Int64 {
+    public func hardwareTime(what: String? = nil) -> Int64 {
         queue.sync {
             if let what = what {
                 return SoapySDRDevice_getHardwareTime(cDevice, what)
@@ -61,7 +61,7 @@ extension SoapyDevice {
     }
 
     @discardableResult
-    func setHardwareTime(_ timeNs: Int64, what: String? = nil) -> Int {
+    public func setHardwareTime(_ timeNs: Int64, what: String? = nil) -> Int {
         queue.sync {
             if let what = what {
                 return Int(SoapySDRDevice_setHardwareTime(cDevice, timeNs, what))
@@ -72,7 +72,7 @@ extension SoapyDevice {
     }
 
     @discardableResult
-    func setCommandTime(_ timeNs: Int64, what: String? = nil) -> Int {
+    public func setCommandTime(_ timeNs: Int64, what: String? = nil) -> Int {
         queue.sync {
             if let what = what {
                 return Int(SoapySDRDevice_setCommandTime(cDevice, timeNs, what))
