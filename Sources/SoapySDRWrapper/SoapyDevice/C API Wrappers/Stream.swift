@@ -60,117 +60,62 @@ extension SoapyDevice {
         }
     }
     
-    public func closeStream(stream: OpaquePointer) -> Bool {
-        queue.sync {
-            let result = SoapySDRDevice_closeStream(self.cDevice, stream)
-            if result != 0 {
-                print("SoapySDRDevice: Error closing stream: \(result)")
-                return false
-            }
-            return true
+    public func closeStream(stream: OpaquePointer) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_closeStream(self.cDevice, stream))
         }
     }
     
-    public func activateStream(stream: OpaquePointer, flags: Int, timeNanoseconds: Int, numElements: Int? = nil) -> Bool {
-        queue.sync {
-            let result = SoapySDRDevice_activateStream(self.cDevice, stream, Int32(flags), Int64(timeNanoseconds), numElements ?? 0)
-            if result != 0 {
-                print("SoapySDRDevice: Error activating stream: \(result)")
-                return false
-            }
-            return true
+    public func activateStream(stream: OpaquePointer, flags: Int, timeNanoseconds: Int, numElements: Int? = nil) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_activateStream(self.cDevice, stream, Int32(flags), Int64(timeNanoseconds), numElements ?? 0))
         }
     }
     
-    public func deactivateStream(stream: OpaquePointer, flags: Int, timeNanoseconds: Int) -> Bool {
-        queue.sync {
-            let result = SoapySDRDevice_deactivateStream(self.cDevice, stream, Int32(flags), Int64(timeNanoseconds))
-            if result != 0 {
-                print("SoapySDRDevice: Error deactivating stream: \(result)")
-                return false
-            }
-            return true
+    public func deactivateStream(stream: OpaquePointer, flags: Int, timeNanoseconds: Int) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_deactivateStream(self.cDevice, stream, Int32(flags), Int64(timeNanoseconds)))
         }
     }
     
-    public func readStream(stream: OpaquePointer, format: String, channelCount: Int,  numSamples: Int, timeoutMicroseconds: Int) -> ([Data], Int32, Int64, Int32)? {
+    /// If passing in reusable buffers, ensure that buffers is of size = channelCount, and each buffer contained has at least enough space for numSamples of the provided format.
+    public func readStream(stream: OpaquePointer, format: String, channelCount: Int,  numSamples: Int, timeoutMicroseconds: Int, buffers: [UnsafeMutableRawPointer?]? = nil) throws -> ([Data], Int32, Int64, Int32) {
         let returnedFlags = getMutablePointerForValue(value: Int32(0)); defer { returnedFlags.deallocate() }
         let bufferTimestamp = getMutablePointerForValue(value: Int64(0)); defer { bufferTimestamp.deallocate() }
         
         guard let totalBytesPerChannel = getTotalBytesPerChannel(format: format, numSamples: numSamples) else {
             print("SoapySDRDevice: Error reading stream, couldn't get total # of bytes per channel.")
-            return nil
+            throw SoapyError.streamError
         }
         let sampleSizeBytes = totalBytesPerChannel / numSamples
         
-        var buffers: [UnsafeMutableRawPointer?] = []
-        buffers.reserveCapacity(channelCount)
-        for _ in 0..<channelCount {
-            guard let ptr = getSampleBuffer(totalBytesPerChannel: totalBytesPerChannel) else {
-                for ptr in buffers {
-                    free(ptr)
+        var localBuffers: [UnsafeMutableRawPointer?] = []
+        if buffers == nil {
+            localBuffers.reserveCapacity(channelCount)
+            for _ in 0..<channelCount {
+                guard let ptr = getSampleBuffer(totalBytesPerChannel: totalBytesPerChannel) else {
+                    for ptr in localBuffers {
+                        free(ptr)
+                    }
+                    throw SoapyError.memory
                 }
-                return nil
+                localBuffers.append(ptr)
             }
-            buffers.append(ptr)
         }
         
-        let readSamples: Int32 = buffers.withUnsafeBufferPointer { buffersPointer in
+        let readSamples: Int32 = (buffers ?? localBuffers).withUnsafeBufferPointer { buffersPointer in
             let base = buffersPointer.baseAddress
             return queue.sync {
                 return SoapySDRDevice_readStream(self.cDevice, stream, base, numSamples, returnedFlags, bufferTimestamp, timeoutMicroseconds)
             }
         }
         
-        guard readSamples > 0 else {
-            for ptr in buffers {
-                free(ptr)
-            }
-            return nil
-        }
         if(readSamples != numSamples) {
             print("SoapySDRDevice: Did not read expected number of samples: \(readSamples), expected: \(numSamples)")
         }
-        let bytesRead = numSamples * sampleSizeBytes
-        let out: [Data] = buffers.map { pointer in
-            Data(bytesNoCopy: pointer!, count: bytesRead, deallocator: .free)
-        }
-        return (out, returnedFlags.pointee, bufferTimestamp.pointee, readSamples)
-    }
-    
-    /// Seperate version of readStream for high-throughput use allowing for 'buffers' to be reused across calls.
-    /// Ensure that buffers is of size = channelCount, and each buffer contained has at least enough space for numSamples of the provided format.
-    public func readStream(stream: OpaquePointer, format: String, channelCount: Int, numSamples: Int, timeoutMicroseconds: Int, buffers: [UnsafeMutableRawPointer?]) -> ([Data], Int32, Int64, Int32)? {
-        let returnedFlags = getMutablePointerForValue(value: Int32(0)); defer { returnedFlags.deallocate() }
-        let bufferTimestamp = getMutablePointerForValue(value: Int64(0)); defer { bufferTimestamp.deallocate() }
-        
-        guard let totalBytesPerChannel = getTotalBytesPerChannel(format: format, numSamples: numSamples) else {
-            print("SoapySDRDevice: Error reading stream, couldn't get total # of bytes per channel.")
-            return nil
-        }
-        let sampleSizeBytes = totalBytesPerChannel / numSamples
-        
-        guard buffers.count == channelCount else { return nil }
-        
-        let readSamples: Int32 = buffers.withUnsafeBufferPointer { buffersPointer in
-            let base = buffersPointer.baseAddress
-            return queue.sync {
-                return SoapySDRDevice_readStream(self.cDevice, stream, base, numSamples, returnedFlags, bufferTimestamp, timeoutMicroseconds)
-            }
-        }
-        
-        guard readSamples > 0 else {
-            for ptr in buffers {
-                free(ptr)
-            }
-            return nil
-        }
-        if(readSamples != numSamples) {
-            print("SoapySDRDevice: Did not read expected number of samples: \(readSamples), expected: \(numSamples)")
-        }
-        let bytesRead = numSamples * sampleSizeBytes
-        let out: [Data] = buffers.map { pointer in
-            Data(bytesNoCopy: pointer!, count: bytesRead, deallocator: .none) // Shouldn't have a deallocator since buffer is reused
+        let bytesRead = Int(readSamples) * sampleSizeBytes
+        let out: [Data] = (buffers ?? localBuffers).map { pointer in
+            Data(bytesNoCopy: pointer!, count: bytesRead, deallocator: buffers == nil ? .free : .none)
         }
         return (out, returnedFlags.pointee, bufferTimestamp.pointee, readSamples)
     }

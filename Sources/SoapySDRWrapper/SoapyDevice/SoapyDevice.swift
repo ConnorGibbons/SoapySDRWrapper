@@ -207,7 +207,7 @@ public class SoapyDevice {
 
         guard let devicePtr = SoapySDRDevice_make(cKwargPointer) else {
             print("SoapySDRWrapper: Failed to create SoapySDRDevice.")
-            throw SoapySDRWrapperErrors.deviceInitFailed
+            throw SoapyError.deviceNotOpen
         }
         self.cDevice = devicePtr
 
@@ -221,7 +221,11 @@ public class SoapyDevice {
     
     public convenience init?(int: Int) {
         guard int >= 0 && int < deviceCache.potentialDevices.count else { return nil }
-        try? self.init(kwargs: deviceCache.potentialDevices[int])
+        do {
+            try self.init(kwargs: deviceCache.potentialDevices[int])
+        } catch {
+            return nil
+        }
     }
     
     deinit {
@@ -235,11 +239,11 @@ public class SoapyDevice {
 // --- Global Device Status Helpers ---
 extension SoapyDevice {
     
-    public static var lastStatus: Int {
-        Int(SoapySDRDevice_lastStatus())
+    public static func lastStatus() -> SoapyError {
+        return SoapyError(code: SoapySDRDevice_lastStatus())
     }
     
-    public static var lastError: String? {
+    public static func lastError() -> String? {
         guard let ptr = SoapySDRDevice_lastError() else { return nil }
         // Do NOT free lastError, it is internal thread-local storage.
         return String(cString: ptr)

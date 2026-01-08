@@ -25,15 +25,15 @@ extension SoapyDevice {
         }
     }
 
-    public func writeGPIO(bank: String, value: UInt32) -> Int {
-        queue.sync {
-            Int(SoapySDRDevice_writeGPIO(cDevice, bank, value))
+    public func writeGPIO(bank: String, value: UInt32) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_writeGPIO(cDevice, bank, value))
         }
     }
 
-    public func writeGPIOMasked(bank: String, value: UInt32, mask: UInt32) -> Int {
-        queue.sync {
-            Int(SoapySDRDevice_writeGPIOMasked(cDevice, bank, value, mask))
+    public func writeGPIOMasked(bank: String, value: UInt32, mask: UInt32) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_writeGPIOMasked(cDevice, bank, value, mask))
         }
     }
 
@@ -43,15 +43,15 @@ extension SoapyDevice {
         }
     }
 
-    public func writeGPIODirection(bank: String, dir: UInt32) -> Int {
-        queue.sync {
-            Int(SoapySDRDevice_writeGPIODir(cDevice, bank, dir))
+    public func writeGPIODirection(bank: String, dir: UInt32) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_writeGPIODir(cDevice, bank, dir))
         }
     }
 
-    public func writeGPIODirectionMasked(bank: String, dir: UInt32, mask: UInt32) -> Int {
-        queue.sync {
-            Int(SoapySDRDevice_writeGPIODirMasked(cDevice, bank, dir, mask))
+    public func writeGPIODirectionMasked(bank: String, dir: UInt32, mask: UInt32) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_writeGPIODirMasked(cDevice, bank, dir, mask))
         }
     }
 
@@ -66,17 +66,17 @@ extension SoapyDevice {
 // --- I2C ---
 extension SoapyDevice {
 
-    public func writeI2C(addr: Int32, data: [UInt8]) -> Int {
-        queue.sync {
+    public func writeI2C(addr: Int32, data: [UInt8]) throws {
+        try queue.sync {
             let mutable = data.map { Int8(bitPattern: $0) }
-            return Int(mutable.withUnsafeBufferPointer {
-                SoapySDRDevice_writeI2C(
+            try mutable.withUnsafeBufferPointer {
+                try soapySDR_errToThrow(code: SoapySDRDevice_writeI2C(
                     cDevice,
                     addr,
                     UnsafePointer($0.baseAddress),
                     numericCast($0.count)
-                )
-            })
+                ))
+            }
         }
     }
 
@@ -122,9 +122,9 @@ extension SoapyDevice {
         }
     }
 
-    public func writeUART(which: String, data: String) -> Int {
-        queue.sync {
-            Int(SoapySDRDevice_writeUART(cDevice, which, data))
+    public func writeUART(which: String, data: String) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_writeUART(cDevice, which, data))
         }
     }
 

@@ -341,7 +341,7 @@ public class SoapyAsyncHandler<T: SampleData>: AsyncHandler {
             throw SoapyAsyncError.streamActivationFailed
         }
         var buffers: [UnsafeMutableRawPointer?] = []
-        for i in 0..<channelCount {
+        for _ in 0..<channelCount {
             let bufferPointer = getSampleBuffer(totalBytesPerChannel: bytesPerChannel)
             buffers.append(bufferPointer)
         }
@@ -353,25 +353,41 @@ public class SoapyAsyncHandler<T: SampleData>: AsyncHandler {
     public func startAsyncRead(callback: @escaping ([[T]]) -> Void) throws {
         guard !self.getHandlerIsActive() else { throw SoapyAsyncError.handlerAlreadyActive }
         self.setHandlerIsActive(true)
-        guard device.activateStream(stream: self.stream, flags: 0, timeNanoseconds: 0) else { throw SoapyAsyncError.streamActivationFailed }
+        try device.activateStream(stream: self.stream, flags: 0, timeNanoseconds: 0)
         
         readingQueue.async {
             while self.getHandlerIsActive() {
-                guard let (sampleData, flags, timestamp, sampleCount) = self.device.readStream(stream: self.stream, format: self.streamFormat, channelCount: self.channelCount, numSamples: self.streamMTU, timeoutMicroseconds: 1_000_000, buffers: self.buffers) else { self.stopAsyncRead(); break; }
-                let asTArray: [[T]?] = sampleData.map { decode($0, format: self.streamFormat) }
-                if asTArray.contains(where: { $0 == nil }) { self.stopAsyncRead(); break; }
-                let asTArrayNoOptionals: [[T]] = asTArray.compactMap { $0 }
-                callback(asTArrayNoOptionals)
+                do {
+                    let (sampleData, _, _, _) = try self.device.readStream(stream: self.stream, format: self.streamFormat, channelCount: self.channelCount, numSamples: self.streamMTU, timeoutMicroseconds: 1_000_000, buffers: self.buffers)
+                    let asTArray: [[T]?] = sampleData.map { decode($0, format: self.streamFormat) }
+                    if asTArray.contains(where: { $0 == nil }) { try self.stopAsyncRead(); break; }
+                    let asTArrayNoOptionals: [[T]] = asTArray.compactMap { $0 }
+                    callback(asTArrayNoOptionals)
+                } catch {
+                    do {
+                        try self.stopAsyncRead()
+                    }
+                    catch {
+                        print("SoapyAsyncHandler: Failed to stop async read.")
+                    }
+                    break
+                }
             }
         }
     }
     
-    public func stopAsyncRead() {
+    func stopAsyncRead() throws {
+        try self.device.deactivateStream(stream: self.stream, flags: 0, timeNanoseconds: 0)
         self.setHandlerIsActive(false)
     }
     
-    func stopRead() {
-        self.stopAsyncRead()
+    public func stopRead() {
+        do {
+            try self.stopAsyncRead()
+        }
+        catch {
+            print("SoapyAsyncHandler: Failed to stop async read.")
+        }
     }
 
     private static func printTypeWarningIfApplicable<X: SampleData>(streamIsComplex: Bool, type: X.Type) {
@@ -416,6 +432,5 @@ enum SoapyAsyncError: Error {
     case noNativeFormat
     case handlerAlreadyActive
     case streamActivationFailed
-    case streamReadFailed
 }
 

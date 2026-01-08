@@ -18,10 +18,9 @@ extension SoapyDevice {
         }
     }
 
-    @discardableResult
-    public func setDCOffsetMode(direction: SoapyDirection, channel: Int, automatic: Bool) -> Int {
-        queue.sync {
-            Int(SoapySDRDevice_setDCOffsetMode(
+    public func setDCOffsetMode(direction: SoapyDirection, channel: Int, automatic: Bool) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_setDCOffsetMode(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),
@@ -42,10 +41,9 @@ extension SoapyDevice {
         }
     }
 
-    @discardableResult
-    public func setDCOffset(direction: SoapyDirection, channel: Int, offsetI: Double, offsetQ: Double) -> Int {
-        queue.sync {
-            Int(SoapySDRDevice_setDCOffset(
+    public func setDCOffset(direction: SoapyDirection, channel: Int, offsetI: Double, offsetQ: Double) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_setDCOffset(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),
@@ -77,10 +75,9 @@ extension SoapyDevice {
         }
     }
 
-    @discardableResult
-    public func setIQBalance(direction: SoapyDirection, channel: Int, balanceI: Double, balanceQ: Double) -> Int {
-        queue.sync {
-            Int(SoapySDRDevice_setIQBalance(
+    public func setIQBalance(direction: SoapyDirection, channel: Int, balanceI: Double, balanceQ: Double) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_setIQBalance(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),
@@ -112,10 +109,9 @@ extension SoapyDevice {
         }
     }
 
-    @discardableResult
-    public func setIQBalanceMode(direction: SoapyDirection, channel: Int, automatic: Bool) -> Int {
-        queue.sync {
-            Int(SoapySDRDevice_setIQBalanceMode(
+    public func setIQBalanceMode(direction: SoapyDirection, channel: Int, automatic: Bool) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_setIQBalanceMode(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),
@@ -136,10 +132,9 @@ extension SoapyDevice {
         }
     }
 
-    @discardableResult
-    public func setFrequencyCorrection(direction: SoapyDirection, channel: Int, ppm: Double) -> Int {
-        queue.sync {
-            Int(SoapySDRDevice_setFrequencyCorrection(
+    public func setFrequencyCorrection(direction: SoapyDirection, channel: Int, ppm: Double) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_setFrequencyCorrection(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),

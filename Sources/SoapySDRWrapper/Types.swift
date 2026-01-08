@@ -17,12 +17,12 @@ public enum SoapySDRWrapperErrors: Error {
 }
 
 public extension SoapySDRRange {
-    public var description: String {
+    var description: String {
         "Min: \(self.minimum), Max: \(self.maximum), Step: \(self.step)"
     }
     
     /// Useful for presentation if the range is describing values in Hz.
-    public var descriptionWithFrequencyUnits: String {
+    var descriptionWithFrequencyUnits: String {
         let minAsFrequency = Frequency(hz: self.minimum)
         let maxAsFrequency = Frequency(hz: self.maximum)
         let stepAsFrequency = Frequency(hz: self.step)

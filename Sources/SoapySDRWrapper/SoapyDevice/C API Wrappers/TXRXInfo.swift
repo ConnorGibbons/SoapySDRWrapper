@@ -30,15 +30,16 @@ extension SoapyDevice {
         }
     }
 
-//    @discardableResult
-//    func setRxFrontendMapping(_ mapping: String) -> Int {
-//        Int(SoapySDRDevice_setFrontendMapping(cDevice, SoapyDirection.rx.rawValue, mapping))
-//    }
-//
-//    @discardableResult
-//    func setTxFrontendMapping(_ mapping: String) -> Int {
-//        Int(SoapySDRDevice_setFrontendMapping(cDevice, SoapyDirection.tx.rawValue, mapping))
-//    }
+    public func setRxFrontendMapping(_ mapping: String) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_setFrontendMapping(cDevice, SoapyDirection.rx.rawValue, mapping))
+        }
+    }
+    public func setTxFrontendMapping(_ mapping: String) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_setFrontendMapping(cDevice, SoapyDirection.tx.rawValue, mapping))
+        }
+    }
 
     public var rxNumChannels: Int {
         queue.sync {

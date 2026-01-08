@@ -29,15 +29,19 @@ final class SoapySDRWrapperTests: XCTestCase {
         
         let preferredFormat = device.rxChannelStreamNativeFormat(channel: 0) ?? "CF32"
         let stream = device.rxSetupStream(channels: [0], format: preferredFormat)
-        XCTAssertTrue(device.activateStream(stream: stream, flags: 0, timeNanoseconds: 0))
-        device.setFrequency(direction: .rx, channel: 0, frequency: 100_100_000)
-        device.setGainMode(direction: .rx, channel: 0, automatic: true)
+        XCTAssertNoThrow(try device.activateStream(stream: stream, flags: 0, timeNanoseconds: 0))
+        try device.setFrequency(direction: .rx, channel: 0, frequency: 100_100_000)
+        try device.setGainMode(direction: .rx, channel: 0, automatic: true)
         print(device.description)
-        let (samples, flags, timestamp, readCount) = device.readStream(stream: stream, format: preferredFormat, channelCount: 1, numSamples: numSamplesToRead, timeoutMicroseconds: Int(1e6)) ?? ([],0,0,0)
-        let (samples1, flags1, timestamp1, readCount1) = device.readStream(stream: stream, format: preferredFormat, channelCount: 1, numSamples: numSamplesToRead, timeoutMicroseconds: Int(1e6)) ?? ([],0,0,0)
-        _ = device.closeStream(stream: stream)
-        XCTAssert(readCount == numSamplesToRead && readCount1 == numSamplesToRead)
-        print("\(readCount1 + readCount) samples in \(timestamp1 - timestamp) nanoseconds, rate: \(Double(readCount1 + readCount) * (1e9 / Double(timestamp1 - timestamp))) samples/second (timestamp-based)")
+        do {
+            let (_, _, timestamp, readCount) = try device.readStream(stream: stream, format: preferredFormat, channelCount: 1, numSamples: numSamplesToRead, timeoutMicroseconds: Int(1e6))
+            let (_, _, timestamp1, readCount1) = try device.readStream(stream: stream, format: preferredFormat, channelCount: 1, numSamples: numSamplesToRead, timeoutMicroseconds: Int(1e6))
+            try device.closeStream(stream: stream)
+            XCTAssert(readCount == numSamplesToRead && readCount1 == numSamplesToRead)
+            print("\(readCount1 + readCount) samples in \(timestamp1 - timestamp) nanoseconds, rate: \(Double(readCount1 + readCount) * (1e9 / Double(timestamp1 - timestamp))) samples/second (timestamp-based)")
+        } catch {
+            XCTFail("testSoapyStreamRead: readStream threw an error: \(error)")
+        }
     }
     
     func testSoapyAsyncHandler() throws {
@@ -48,7 +52,7 @@ final class SoapySDRWrapperTests: XCTestCase {
         let semQueue = DispatchQueue.init(label: "testAsyncQueue")
         
         let device = try getFirstDevice()
-        device.setSampleRate(direction: .rx, channel: 0, rate: sampleRate)
+        try device.setSampleRate(direction: .rx, channel: 0, rate: sampleRate)
         let sem = DispatchSemaphore(value: 0)
         var count: Int = 0
         let t0 = DispatchTime.now()

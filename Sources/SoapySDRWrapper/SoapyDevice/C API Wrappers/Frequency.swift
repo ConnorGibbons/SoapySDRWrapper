@@ -10,11 +10,10 @@ import CSoapySDR
 extension SoapyDevice {
 
     // --- Frequency API ---
-    @discardableResult
-    public func setFrequency(direction: SoapyDirection, channel: Int, frequency: Double, args: SoapyKwargs? = nil) -> Int {
-        queue.sync {
+    public func setFrequency(direction: SoapyDirection, channel: Int, frequency: Double, args: SoapyKwargs? = nil) throws {
+        try queue.sync {
             if var cArgs = args?.cKwargs {
-                return Int(SoapySDRDevice_setFrequency(
+                try soapySDR_errToThrow(code: SoapySDRDevice_setFrequency(
                     cDevice,
                     direction.rawValue,
                     numericCast(channel),
@@ -22,7 +21,7 @@ extension SoapyDevice {
                     &cArgs
                 ))
             } else {
-                return Int(SoapySDRDevice_setFrequency(
+                try soapySDR_errToThrow(code: SoapySDRDevice_setFrequency(
                     cDevice,
                     direction.rawValue,
                     numericCast(channel),
@@ -33,11 +32,10 @@ extension SoapyDevice {
         }
     }
 
-    @discardableResult
-    public func setFrequencyComponent(direction: SoapyDirection, channel: Int, name: String, frequency: Double, args: SoapyKwargs? = nil) -> Int {
-        queue.sync {
+    public func setFrequencyComponent(direction: SoapyDirection, channel: Int, name: String, frequency: Double, args: SoapyKwargs? = nil) throws {
+        try queue.sync {
             if var cArgs = args?.cKwargs {
-                return Int(SoapySDRDevice_setFrequencyComponent(
+                try soapySDR_errToThrow(code: SoapySDRDevice_setFrequencyComponent(
                     cDevice,
                     direction.rawValue,
                     numericCast(channel),
@@ -46,7 +44,7 @@ extension SoapyDevice {
                     &cArgs
                 ))
             } else {
-                return Int(SoapySDRDevice_setFrequencyComponent(
+                try soapySDR_errToThrow(code: SoapySDRDevice_setFrequencyComponent(
                     cDevice,
                     direction.rawValue,
                     numericCast(channel),

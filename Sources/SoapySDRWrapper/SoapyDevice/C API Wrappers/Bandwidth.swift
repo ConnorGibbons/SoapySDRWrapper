@@ -10,10 +10,9 @@ import CSoapySDR
 extension SoapyDevice {
 
     // --- Bandwidth API ---
-    @discardableResult
-    public func setBandwidth(direction: SoapyDirection, channel: Int, bw: Double) -> Int {
-        queue.sync {
-            Int(SoapySDRDevice_setBandwidth(
+    public func setBandwidth(direction: SoapyDirection, channel: Int, bw: Double) throws {
+        try queue.sync {
+            try soapySDR_errToThrow(code: SoapySDRDevice_setBandwidth(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),
