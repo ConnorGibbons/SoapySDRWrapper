@@ -12,7 +12,7 @@ extension SoapyDevice {
     // --- Sample Rate API ---
     public func setSampleRate(direction: SoapyDirection, channel: Int, rate: Double) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_setSampleRate(
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_setSampleRate(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),

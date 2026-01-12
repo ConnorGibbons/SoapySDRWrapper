@@ -27,13 +27,13 @@ extension SoapyDevice {
 
     public func writeGPIO(bank: String, value: UInt32) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_writeGPIO(cDevice, bank, value))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_writeGPIO(cDevice, bank, value))
         }
     }
 
     public func writeGPIOMasked(bank: String, value: UInt32, mask: UInt32) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_writeGPIOMasked(cDevice, bank, value, mask))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_writeGPIOMasked(cDevice, bank, value, mask))
         }
     }
 
@@ -45,13 +45,13 @@ extension SoapyDevice {
 
     public func writeGPIODirection(bank: String, dir: UInt32) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_writeGPIODir(cDevice, bank, dir))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_writeGPIODir(cDevice, bank, dir))
         }
     }
 
     public func writeGPIODirectionMasked(bank: String, dir: UInt32, mask: UInt32) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_writeGPIODirMasked(cDevice, bank, dir, mask))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_writeGPIODirMasked(cDevice, bank, dir, mask))
         }
     }
 
@@ -70,7 +70,7 @@ extension SoapyDevice {
         try queue.sync {
             let mutable = data.map { Int8(bitPattern: $0) }
             try mutable.withUnsafeBufferPointer {
-                try soapySDR_errToThrow(code: SoapySDRDevice_writeI2C(
+                try SoapySDRMaybeThrowError(code: SoapySDRDevice_writeI2C(
                     cDevice,
                     addr,
                     UnsafePointer($0.baseAddress),
@@ -124,7 +124,7 @@ extension SoapyDevice {
 
     public func writeUART(which: String, data: String) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_writeUART(cDevice, which, data))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_writeUART(cDevice, which, data))
         }
     }
 

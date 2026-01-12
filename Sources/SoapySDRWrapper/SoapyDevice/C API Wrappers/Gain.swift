@@ -39,7 +39,7 @@ extension SoapyDevice {
 
     public func setGainMode(direction: SoapyDirection, channel: Int, automatic: Bool) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_setGainMode(
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_setGainMode(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),
@@ -56,7 +56,7 @@ extension SoapyDevice {
 
     public func setGain(direction: SoapyDirection, channel: Int, value: Double) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_setGain(
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_setGain(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),
@@ -67,7 +67,7 @@ extension SoapyDevice {
 
     public func setGain(direction: SoapyDirection, channel: Int, element name: String, value: Double) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_setGainElement(
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_setGainElement(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),

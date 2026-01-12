@@ -34,7 +34,7 @@ extension SoapyDevice {
 
     public func setAntenna(direction: SoapyDirection, channel: Int, name: String) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_setAntenna(
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_setAntenna(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),

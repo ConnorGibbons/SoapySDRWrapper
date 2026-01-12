@@ -26,7 +26,7 @@ extension SoapyDevice {
 
     public func writeSetting(key: String, value: String) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_writeSetting(cDevice, key, value))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_writeSetting(cDevice, key, value))
         }
     }
 
@@ -55,7 +55,7 @@ extension SoapyDevice {
 
     public func writeChannelSetting(direction: SoapyDirection, channel: Int, key: String, value: String) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_writeChannelSetting(
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_writeChannelSetting(
                 cDevice,
                 direction.rawValue,
                 numericCast(channel),

@@ -62,19 +62,19 @@ extension SoapyDevice {
     
     public func closeStream(stream: OpaquePointer) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_closeStream(self.cDevice, stream))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_closeStream(self.cDevice, stream))
         }
     }
     
     public func activateStream(stream: OpaquePointer, flags: Int, timeNanoseconds: Int, numElements: Int? = nil) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_activateStream(self.cDevice, stream, Int32(flags), Int64(timeNanoseconds), numElements ?? 0))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_activateStream(self.cDevice, stream, Int32(flags), Int64(timeNanoseconds), numElements ?? 0))
         }
     }
     
     public func deactivateStream(stream: OpaquePointer, flags: Int, timeNanoseconds: Int) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_deactivateStream(self.cDevice, stream, Int32(flags), Int64(timeNanoseconds)))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_deactivateStream(self.cDevice, stream, Int32(flags), Int64(timeNanoseconds)))
         }
     }
     
@@ -108,6 +108,10 @@ extension SoapyDevice {
             return queue.sync {
                 return SoapySDRDevice_readStream(self.cDevice, stream, base, numSamples, returnedFlags, bufferTimestamp, timeoutMicroseconds)
             }
+        }
+        guard readSamples > 0 else {
+            try SoapySDRMaybeThrowError(code: readSamples)
+            throw SoapyError.streamError
         }
         
         if(readSamples != numSamples) {

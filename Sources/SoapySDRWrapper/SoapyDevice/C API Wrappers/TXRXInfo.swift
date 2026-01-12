@@ -32,12 +32,12 @@ extension SoapyDevice {
 
     public func setRxFrontendMapping(_ mapping: String) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_setFrontendMapping(cDevice, SoapyDirection.rx.rawValue, mapping))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_setFrontendMapping(cDevice, SoapyDirection.rx.rawValue, mapping))
         }
     }
     public func setTxFrontendMapping(_ mapping: String) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_setFrontendMapping(cDevice, SoapyDirection.tx.rawValue, mapping))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_setFrontendMapping(cDevice, SoapyDirection.tx.rawValue, mapping))
         }
     }
 

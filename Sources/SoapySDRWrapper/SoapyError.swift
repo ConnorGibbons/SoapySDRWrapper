@@ -41,11 +41,11 @@ public enum SoapyError: Error {
     }
 }
 
-public func SoapySDR_errToStr(errorCode: Int32) -> String {
+public func SoapySDRErrorToString(errorCode: Int32) -> String {
     return String(cString: CSoapySDR.SoapySDR_errToStr(errorCode))
 }
 
-func soapySDR_errToThrow(code: Int32) throws {
+func SoapySDRMaybeThrowError(code: Int32) throws {
     if code != 0 {
         throw SoapyError(code: code)
     }

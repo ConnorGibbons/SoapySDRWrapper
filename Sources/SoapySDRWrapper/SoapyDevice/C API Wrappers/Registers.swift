@@ -27,7 +27,7 @@ extension SoapyDevice {
 
     public func writeRegister(interface name: String, addr: UInt32, value: UInt32) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_writeRegister(cDevice, name, addr, value))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_writeRegister(cDevice, name, addr, value))
         }
     }
 
@@ -41,7 +41,7 @@ extension SoapyDevice {
         try queue.sync {
             var valuesCopy = values
             try valuesCopy.withUnsafeMutableBufferPointer {
-                try soapySDR_errToThrow(code: SoapySDRDevice_writeRegisters(
+                try SoapySDRMaybeThrowError(code: SoapySDRDevice_writeRegisters(
                     cDevice,
                     name,
                     addr,

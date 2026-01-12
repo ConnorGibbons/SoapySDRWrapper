@@ -12,7 +12,7 @@ extension SoapyDevice {
     // --- Clocking API ---
     public func setMasterClockRate(_ rate: Double) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_setMasterClockRate(cDevice, rate))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_setMasterClockRate(cDevice, rate))
         }
     }
 
@@ -35,7 +35,7 @@ extension SoapyDevice {
 
     public func setReferenceClockRate(_ rate: Double) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_setReferenceClockRate(cDevice, rate))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_setReferenceClockRate(cDevice, rate))
         }
     }
 
@@ -73,7 +73,7 @@ extension SoapyDevice {
 
     public func setClockSource(_ source: String) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_setClockSource(cDevice, source))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_setClockSource(cDevice, source))
         }
     }
 

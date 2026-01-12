@@ -27,7 +27,7 @@ extension SoapyDevice {
 
     public func setTimeSource(_ source: String) throws {
         try queue.sync {
-            try soapySDR_errToThrow(code: SoapySDRDevice_setTimeSource(cDevice, source))
+            try SoapySDRMaybeThrowError(code: SoapySDRDevice_setTimeSource(cDevice, source))
         }
     }
 
@@ -62,9 +62,9 @@ extension SoapyDevice {
     public func setHardwareTime(_ timeNs: Int64, what: String? = nil) throws {
         try queue.sync {
             if let what = what {
-                try soapySDR_errToThrow(code: SoapySDRDevice_setHardwareTime(cDevice, timeNs, what))
+                try SoapySDRMaybeThrowError(code: SoapySDRDevice_setHardwareTime(cDevice, timeNs, what))
             } else {
-                try soapySDR_errToThrow(code: SoapySDRDevice_setHardwareTime(cDevice, timeNs, nil))
+                try SoapySDRMaybeThrowError(code: SoapySDRDevice_setHardwareTime(cDevice, timeNs, nil))
             }
         }
     }
@@ -72,9 +72,9 @@ extension SoapyDevice {
     public func setCommandTime(_ timeNs: Int64, what: String? = nil) throws {
         try queue.sync {
             if let what = what {
-                try soapySDR_errToThrow(code: SoapySDRDevice_setCommandTime(cDevice, timeNs, what))
+                try SoapySDRMaybeThrowError(code: SoapySDRDevice_setCommandTime(cDevice, timeNs, what))
             } else {
-                try soapySDR_errToThrow(code: SoapySDRDevice_setCommandTime(cDevice, timeNs, nil))
+                try SoapySDRMaybeThrowError(code: SoapySDRDevice_setCommandTime(cDevice, timeNs, nil))
             }
         }
     }

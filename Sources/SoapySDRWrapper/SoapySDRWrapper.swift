@@ -40,16 +40,19 @@ class SoapyDeviceCache: @unchecked Sendable {
     }
     
     func presentPotentialDevices() -> String {
-        guard !potentialDevices.isEmpty else { return "No Soapy SDR devices available.\n" }
-        var result: String = "--- Potential Soapy SDR Devices ---\n"
-        result += "Format: '(index): SoapyKwargs'\n"
-        for i in 0..<potentialDevices.count {
-            result += " \(i): \(potentialDevices[i].description)\n"
+        queue.sync {
+            guard !potentialDevices.isEmpty else { return "No Soapy SDR devices available.\n" }
+            var result: String = "--- Potential Soapy SDR Devices ---\n"
+            result += "Format: '(index): SoapyKwargs'\n"
+            for i in 0..<potentialDevices.count {
+                result += " \(i): \(potentialDevices[i].description)\n"
+            }
+            return result
         }
-        return result
     }
     
 }
+
 let deviceCache = SoapyDeviceCache()
 
 public enum SoapyProbe {

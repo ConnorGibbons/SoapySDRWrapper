@@ -13,7 +13,7 @@ extension SoapyDevice {
     public func setFrequency(direction: SoapyDirection, channel: Int, frequency: Double, args: SoapyKwargs? = nil) throws {
         try queue.sync {
             if var cArgs = args?.cKwargs {
-                try soapySDR_errToThrow(code: SoapySDRDevice_setFrequency(
+                try SoapySDRMaybeThrowError(code: SoapySDRDevice_setFrequency(
                     cDevice,
                     direction.rawValue,
                     numericCast(channel),
@@ -21,7 +21,7 @@ extension SoapyDevice {
                     &cArgs
                 ))
             } else {
-                try soapySDR_errToThrow(code: SoapySDRDevice_setFrequency(
+                try SoapySDRMaybeThrowError(code: SoapySDRDevice_setFrequency(
                     cDevice,
                     direction.rawValue,
                     numericCast(channel),
@@ -35,7 +35,7 @@ extension SoapyDevice {
     public func setFrequencyComponent(direction: SoapyDirection, channel: Int, name: String, frequency: Double, args: SoapyKwargs? = nil) throws {
         try queue.sync {
             if var cArgs = args?.cKwargs {
-                try soapySDR_errToThrow(code: SoapySDRDevice_setFrequencyComponent(
+                try SoapySDRMaybeThrowError(code: SoapySDRDevice_setFrequencyComponent(
                     cDevice,
                     direction.rawValue,
                     numericCast(channel),
@@ -44,7 +44,7 @@ extension SoapyDevice {
                     &cArgs
                 ))
             } else {
-                try soapySDR_errToThrow(code: SoapySDRDevice_setFrequencyComponent(
+                try SoapySDRMaybeThrowError(code: SoapySDRDevice_setFrequencyComponent(
                     cDevice,
                     direction.rawValue,
                     numericCast(channel),
