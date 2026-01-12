@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import complex_h
 import CSoapySDR
 
 extension SoapyDevice {

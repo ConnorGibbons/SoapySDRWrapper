@@ -164,9 +164,14 @@ public class SoapyDevice {
             // DC Offset
             let hasDC = self.hasDCOffset(direction: direction, channel: channel)
             if hasDC {
-                let dcVal = self.dcOffset(direction: direction, channel: channel)
-                let autoDC = self.dcOffsetMode(direction: direction, channel: channel)
-                str += "  DC Offset:    \(autoDC ? "Automatic" : "Manual") -> \(String(describing: dcVal))\n"
+                do {
+                    let dcVal = try self.dcOffset(direction: direction, channel: channel)
+                    let autoDC = self.dcOffsetMode(direction: direction, channel: channel)
+                    str += "  DC Offset:    \(autoDC ? "Automatic" : "Manual") -> \(String(describing: dcVal))\n"
+                }
+                catch {
+                    print("Error: \(error.localizedDescription)")
+                }
             } else {
                 str += "  DC Offset:    Not Supported\n"
             }
