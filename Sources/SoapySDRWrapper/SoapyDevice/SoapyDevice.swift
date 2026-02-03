@@ -224,6 +224,26 @@ public class SoapyDevice {
         }
     }
     
+    public init(stringArgs: String) throws {
+        var devicePtr: OpaquePointer?
+        try stringArgs.utf8CString.withUnsafeBufferPointer { cStringBufferPtr in // UnsafeBufferPointer<CChar>
+            guard let devPtr = SoapySDRDevice_makeStrArgs(cStringBufferPtr.baseAddress) else {
+                throw SoapyError.deviceNotOpen
+            }
+            devicePtr = devPtr
+        }
+        guard let devicePtr else {
+            throw SoapyError.deviceNotOpen
+        }
+        self.cDevice = devicePtr
+        queue.sync {
+            if deviceCache.deviceIsPresent(devicePtr) {
+                print("SoapySDRWrapper warning: Device already present in cache, this SoapyDevice will refer to the same SDR as an existing SoapyDevice.")
+            }
+            deviceCache.addDevice(devicePtr)
+        }
+    }
+    
     public convenience init?(int: Int) {
         guard int >= 0 && int < deviceCache.potentialDevices.count else { return nil }
         do {

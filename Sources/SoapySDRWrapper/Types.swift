@@ -44,6 +44,10 @@ public struct SoapyKwargs {
         }
     }
     
+    public var dictAsString: String {
+        return dict.map{ "\($0)=\($1)" }.joined(separator: ",")
+    }
+    
     /// Gets a mutable pointer to a copy of cKwargs. Don't forget to deallocate after use.
     public func getcKwargsMutablePointer() -> UnsafeMutablePointer<SoapySDRKwargs> {
         return getMutablePointerForValue(value: cKwargs)
