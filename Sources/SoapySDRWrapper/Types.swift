@@ -44,6 +44,11 @@ public struct SoapyKwargs {
         }
     }
     
+    public init() {
+        self.cKwargs = SoapySDRKwargs(size: 0, keys: nil, vals: nil)
+        self.dict = [:]
+    }
+    
     public var dictAsString: String {
         return dict.map{ "\($0)=\($1)" }.joined(separator: ",")
     }
