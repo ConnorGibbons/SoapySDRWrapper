@@ -244,13 +244,9 @@ public class SoapyDevice {
         }
     }
     
-    public convenience init?(int: Int) {
-        guard int >= 0 && int < deviceCache.potentialDevices.count else { return nil }
-        do {
-            try self.init(kwargs: deviceCache.potentialDevices[int])
-        } catch {
-            return nil
-        }
+    public convenience init(int: Int) throws {
+        guard int >= 0 && int < deviceCache.potentialDevices.count else { throw SoapyError.deviceNotOpen }
+        try self.init(kwargs: deviceCache.potentialDevices[int])
     }
     
     deinit {
