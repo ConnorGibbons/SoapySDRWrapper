@@ -23,10 +23,17 @@ extension SoapyDevice {
     /// T is implied by the type used in callback; the type used must conform to SampleData.
     /// Will return an id (Int) that must be stored so it can be used to stop the stream later.
     public func asyncReadSamples<T: SampleData>(channels: [Int], callback: @escaping ([[T]]) -> Void) throws -> Int {
-        let handler = try SoapyAsyncHandler<T>(device: self, channels: channels)
-        let id = self.addHandlerToDict(handler)
-        try handler.startAsyncRead(callback: callback)
-        return id
+        do {
+            let handler = try SoapyAsyncHandler<T>(device: self, channels: channels)
+            let id = self.addHandlerToDict(handler)
+            try handler.startAsyncRead(callback: callback)
+            return id
+        }
+        catch {
+            print("SoapySDRWrapper: Error in asyncReadSamples: \(error)")
+            print(SoapyProbe.lastError())
+            throw error
+        }
     }
     
     public func asyncStopReadingSamples(id: Int) {
