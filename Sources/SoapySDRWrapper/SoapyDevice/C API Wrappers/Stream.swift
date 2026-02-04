@@ -43,7 +43,7 @@ extension SoapyDevice {
         }
     }
     
-    public func rxSetupStream(channels: [Int], format: String, args: SoapySDRKwargs = SoapySDRKwargs()) -> OpaquePointer {
+    public func rxSetupStream(channels: [Int], format: String, args: SoapySDRKwargs = SoapySDRKwargs()) -> OpaquePointer? {
         queue.sync {
             channels.withUnsafeBufferPointer { channelPtr in
                 var kwargs = args

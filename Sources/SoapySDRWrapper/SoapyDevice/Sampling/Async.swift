@@ -333,7 +333,10 @@ public class SoapyAsyncHandler<T: SampleData>: AsyncHandler {
         self.channelCount = channels.count
         SoapyAsyncHandler<T>.printTypeWarningIfApplicable(streamIsComplex: nativeFormat.hasPrefix("C"), type: T.self)
         
-        self.stream = device.rxSetupStream(channels: channels, format: nativeFormat)
+        guard let newStream = device.rxSetupStream(channels: channels, format: nativeFormat) else {
+            throw SoapyAsyncError.streamSetupFailed
+        }
+        self.stream = newStream
         self.streamMTU = device.getStreamMTU(stream: stream)
         
         guard let bytesPerChannel = getTotalBytesPerChannel(format: nativeFormat, numSamples: streamMTU) else {
@@ -432,5 +435,6 @@ enum SoapyAsyncError: Error {
     case noNativeFormat
     case handlerAlreadyActive
     case streamActivationFailed
+    case streamSetupFailed
 }
 
