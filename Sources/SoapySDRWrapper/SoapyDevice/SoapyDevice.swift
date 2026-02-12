@@ -249,7 +249,7 @@ public class SoapyDevice {
         try self.init(kwargs: deviceCache.potentialDevices[int])
     }
     
-    deinit {
+    deinit { // Worth noting: SoapySDRDevice_unmake can hang in some scenarios, which will hang your program during deinit
         queue.sync {
             deviceCache.removeDevice(cDevice)
             SoapySDRDevice_unmake(cDevice)

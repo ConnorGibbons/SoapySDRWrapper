@@ -113,9 +113,9 @@ extension SoapyDevice {
             throw SoapyError.streamError
         }
         
-        if(readSamples != numSamples) {
-            print("SoapySDRDevice: Did not read expected number of samples: \(readSamples), expected: \(numSamples)")
-        }
+//        if(readSamples != numSamples) {
+//            print("SoapySDRDevice: Did not read expected number of samples: \(readSamples), expected: \(numSamples)")
+//        }
         let bytesRead = Int(readSamples) * sampleSizeBytes
         let out: [Data] = (buffers ?? localBuffers).map { pointer in
             Data(bytesNoCopy: pointer!, count: bytesRead, deallocator: buffers == nil ? .free : .none)
