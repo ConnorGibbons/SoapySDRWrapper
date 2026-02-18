@@ -391,8 +391,8 @@ public class SoapyAsyncHandler<T: SampleData>: AsyncHandler {
                         catch {
                             print("SoapyAsyncHandler: Call to stopAsyncRead threw: \(error.localizedDescription)")
                         }
+                        break
                     }
-                    break
                 }
             }
         }
