@@ -21,7 +21,7 @@ public class SoapyDevice {
     private var nextAsyncHandlerId: Int = 0
     var asyncHandlerDictionary: [Int: AsyncHandler] = [:]
     public var isActive: Bool {
-        return !asyncHandlerDictionary.contains(where: { (key, val) in
+        return asyncHandlerDictionary.contains(where: { (key, val) in
             return val.getHandlerIsActive()
         })
     }
