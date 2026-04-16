@@ -57,7 +57,7 @@ final class SoapySDRWrapperTests: XCTestCase {
         var count: Int = 0
         let t0 = DispatchTime.now()
         let id = try device.asyncReadSamples(channels: [0], callback: {
-            let x: [ComplexSample] = $0[0]
+            let x: [SoapyComplexSample] = $0[0]
             count += x.count
         })
         semQueue.asyncAfter(deadline: .now() + readSeconds, execute: {

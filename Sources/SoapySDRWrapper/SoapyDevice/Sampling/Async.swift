@@ -22,7 +22,7 @@ extension SoapyDevice {
     /// Asynchronous reading function allowing for a user defined callback.
     /// T is implied by the type used in callback; the type used must conform to SampleData.
     /// Will return an id (Int) that must be stored so it can be used to stop the stream later.
-    public func asyncReadSamples<T: SampleData>(channels: [Int], callback: @escaping ([[T]]) -> Void) throws -> Int {
+    public func asyncReadSamples<T: SoapySampleData>(channels: [Int], callback: @escaping ([[T]]) -> Void) throws -> Int {
         do {
             let handler = try SoapyAsyncHandler<T>(device: self, channels: channels)
             let id = self.addHandlerToDict(handler)
@@ -45,14 +45,14 @@ extension SoapyDevice {
     
 }
 
-public protocol SampleData {
+public protocol SoapySampleData {
     static func arrayFrom(_ floats: [Float]) -> [Self]?
     static func arrayFrom(_ doubles: [Double]) -> [Self]?
     static func arrayFrom<T: FixedWidthInteger & UnsignedInteger>(_ integers: [T]) -> [Self]?
     static func arrayFrom<T: FixedWidthInteger & SignedInteger>(_ integers: [T]) -> [Self]?
 }
 
-func decode<T: SampleData>(_ data: Data, format: String) -> [T]? {
+func decode<T: SoapySampleData>(_ data: Data, format: String) -> [T]? {
     guard let bitLength = Int(format.filter { $0.isNumber }) else { return nil }
     guard bitLength % 8 == 0 else {
         print("Can't get samples from Data, format \(format) is not byte aligned.")
@@ -135,32 +135,32 @@ func decode<T: SampleData>(_ data: Data, format: String) -> [T]? {
 
 /// To be used as the output type for real-valued stream reads.
 /// Uses Float internally, value range: [-1,1].
-public struct Sample: Equatable, SampleData {
+public struct SoapySample: Equatable, SoapySampleData {
     public let value: Float
     
     /// Initializes [Sample] from [Float]. Note that this assumes that the values are already in the range [-1,1].
-    public static func arrayFrom(_ floats: [Float]) -> [Sample]? {
-        return floats.map { Sample(value: $0) }
+    public static func arrayFrom(_ floats: [Float]) -> [SoapySample]? {
+        return floats.map { SoapySample(value: $0) }
     }
     
     /// Initializes [Sample] from [Double], note that this will lose precision by converting from Double to Float internally. Note that this assumes values are already in the range [-1,1].
-    public static func arrayFrom(_ doubles: [Double]) -> [Sample]? {
-        return doubles.map { Sample(value: Float($0)) }
+    public static func arrayFrom(_ doubles: [Double]) -> [SoapySample]? {
+        return doubles.map { SoapySample(value: Float($0)) }
     }
     
-    public static func arrayFrom<T>(_ integers: [T]) -> [Sample]? where T : FixedWidthInteger, T : UnsignedInteger {
+    public static func arrayFrom<T>(_ integers: [T]) -> [SoapySample]? where T : FixedWidthInteger, T : UnsignedInteger {
         let scale = Float(T.max)
         return integers.map {
             let asFloat = Float($0)
-            return Sample(value: (asFloat / scale) * 2 - 1)
+            return SoapySample(value: (asFloat / scale) * 2 - 1)
         }
     }
     
-    public static func arrayFrom<T>(_ integers: [T]) -> [Sample]? where T : FixedWidthInteger, T : SignedInteger {
+    public static func arrayFrom<T>(_ integers: [T]) -> [SoapySample]? where T : FixedWidthInteger, T : SignedInteger {
         let scale = Float(T.max)
         return integers.map {
             let asFloat = Float($0)
-            return Sample(value: Swift.max(-1.0, asFloat / scale))
+            return SoapySample(value: Swift.max(-1.0, asFloat / scale))
         }
     }
     
@@ -179,32 +179,32 @@ private func reinterpretDataAsType<T>(input: Data, type: T.Type) -> [T]? {
 }
 
 // To optionally be used as the output type for real-valued stream reads.
-public struct PreciseSample: Equatable, SampleData {
+public struct SoapyPreciseSample: Equatable, SoapySampleData {
     public let value: Double
     
     /// Initializes [PreciseSample] from [Float]. Note that this assumes that the values are already in the range [-1,1].
-    public static func arrayFrom(_ floats: [Float]) -> [PreciseSample]? {
-        return floats.map { PreciseSample(value: Double($0)) }
+    public static func arrayFrom(_ floats: [Float]) -> [SoapyPreciseSample]? {
+        return floats.map { SoapyPreciseSample(value: Double($0)) }
     }
     
     /// Initializes [PreciseSample] from [Double].  Note that this assumes values are already in the range [-1,1].
-    public static func arrayFrom(_ doubles: [Double]) -> [PreciseSample]? {
-        return doubles.map { PreciseSample(value: $0) }
+    public static func arrayFrom(_ doubles: [Double]) -> [SoapyPreciseSample]? {
+        return doubles.map { SoapyPreciseSample(value: $0) }
     }
     
-    public static func arrayFrom<T>(_ integers: [T]) -> [PreciseSample]? where T : FixedWidthInteger, T : UnsignedInteger {
+    public static func arrayFrom<T>(_ integers: [T]) -> [SoapyPreciseSample]? where T : FixedWidthInteger, T : UnsignedInteger {
         let scale = Double(T.max)
         return integers.map {
             let asFloat = Double($0)
-            return PreciseSample(value: (asFloat / scale) * 2 - 1)
+            return SoapyPreciseSample(value: (asFloat / scale) * 2 - 1)
         }
     }
     
-    public static func arrayFrom<T>(_ integers: [T]) -> [PreciseSample]? where T : FixedWidthInteger, T : SignedInteger {
+    public static func arrayFrom<T>(_ integers: [T]) -> [SoapyPreciseSample]? where T : FixedWidthInteger, T : SignedInteger {
         let scale = Double(T.max)
         return integers.map {
             let asFloat = Double($0)
-            return PreciseSample(value: Swift.max(-1.0, asFloat / scale))
+            return SoapyPreciseSample(value: Swift.max(-1.0, asFloat / scale))
         }
     }
     
@@ -212,7 +212,7 @@ public struct PreciseSample: Equatable, SampleData {
 }
 
 // To be used as the output type for complex-valued stream reads.
-public struct ComplexSample: Equatable, SampleData {
+public struct SoapyComplexSample: Equatable, SoapySampleData {
     public let real: Float
     public let imag: Float
     
@@ -222,10 +222,10 @@ public struct ComplexSample: Equatable, SampleData {
     /// 2. That the sample values consist of interleaved IQ samples.
     /// The resulting ComplexSample array will have (floats.count / 2) elements.
     /// If floats does not have an even number of elements, nil will be returned.
-    public static func arrayFrom(_ floats: [Float]) -> [ComplexSample]? {
+    public static func arrayFrom(_ floats: [Float]) -> [SoapyComplexSample]? {
         guard floats.count % 2 == 0 else { return nil }
         return stride(from: 0, to: floats.count, by: 2).map {
-            ComplexSample(real: floats[$0], imag: floats[$0 + 1])
+            SoapyComplexSample(real: floats[$0], imag: floats[$0 + 1])
         }
     }
     
@@ -235,37 +235,37 @@ public struct ComplexSample: Equatable, SampleData {
     /// 2. That the sample values consist of interleaved IQ samples.
     /// The resulting ComplexSample array will have (floats.count / 2) elements.
     /// If floats does not have an even number of elements, nil will be returned.
-    public static func arrayFrom(_ doubles: [Double]) -> [ComplexSample]? {
+    public static func arrayFrom(_ doubles: [Double]) -> [SoapyComplexSample]? {
         guard doubles.count % 2 == 0 else { return nil }
         return stride(from: 0, to: doubles.count, by: 2).map {
-            ComplexSample(real: Float(doubles[$0]), imag: Float(doubles[$0 + 1]))
+            SoapyComplexSample(real: Float(doubles[$0]), imag: Float(doubles[$0 + 1]))
         }
     }
     
-    public static func arrayFrom<T>(_ integers: [T]) -> [ComplexSample]? where T : FixedWidthInteger, T : UnsignedInteger {
+    public static func arrayFrom<T>(_ integers: [T]) -> [SoapyComplexSample]? where T : FixedWidthInteger, T : UnsignedInteger {
         guard integers.count % 2 == 0 else { return nil }
         let scale = Float(T.max)
         return stride(from: 0, to: integers.count, by: 2).map {
             let realScaled = (Float(integers[$0]) / scale) * 2 - 1
             let imagScaled = (Float(integers[$0 + 1]) / scale) * 2 - 1
-            return ComplexSample(real: realScaled, imag: imagScaled)
+            return SoapyComplexSample(real: realScaled, imag: imagScaled)
         }
     }
     
-    public static func arrayFrom<T>(_ integers: [T]) -> [ComplexSample]? where T : FixedWidthInteger, T : SignedInteger {
+    public static func arrayFrom<T>(_ integers: [T]) -> [SoapyComplexSample]? where T : FixedWidthInteger, T : SignedInteger {
         guard integers.count % 2 == 0 else { return nil }
         let scale = Float(T.max)
         return stride(from: 0, to: integers.count, by: 2).map {
             let realScaled = Swift.max(-1.0, Float(integers[$0]) / scale)
             let imagScaled = Swift.max(-1.0, Float(integers[$0 + 1]) / scale)
-            return ComplexSample(real: realScaled, imag: imagScaled)
+            return SoapyComplexSample(real: realScaled, imag: imagScaled)
         }
     }
     
 }
 
 // To optionally be used as the output type for complex-valued stream reads.
-public struct PreciseComplexSample: Equatable, SampleData {
+public struct SoapyPreciseComplexSample: Equatable, SoapySampleData {
     public let real: Double
     public let imag: Double
     
@@ -275,10 +275,10 @@ public struct PreciseComplexSample: Equatable, SampleData {
     /// 2. That the sample values consist of interleaved IQ samples.
     /// The resulting ComplexSample array will have (floats.count / 2) elements.
     /// If floats does not have an even number of elements, nil will be returned.
-    public static func arrayFrom(_ floats: [Float]) -> [PreciseComplexSample]? {
+    public static func arrayFrom(_ floats: [Float]) -> [SoapyPreciseComplexSample]? {
         guard floats.count % 2 == 0 else { return nil }
         return stride(from: 0, to: floats.count, by: 2).map {
-            PreciseComplexSample(real: Double(floats[$0]), imag: Double(floats[$0 + 1]))
+            SoapyPreciseComplexSample(real: Double(floats[$0]), imag: Double(floats[$0 + 1]))
         }
     }
     
@@ -288,30 +288,30 @@ public struct PreciseComplexSample: Equatable, SampleData {
     /// 2. That the sample values consist of interleaved IQ samples.
     /// The resulting ComplexSample array will have (floats.count / 2) elements.
     /// If floats does not have an even number of elements, nil will be returned.
-    public static func arrayFrom(_ doubles: [Double]) -> [PreciseComplexSample]? {
+    public static func arrayFrom(_ doubles: [Double]) -> [SoapyPreciseComplexSample]? {
         guard doubles.count % 2 == 0 else { return nil }
         return stride(from: 0, to: doubles.count, by: 2).map {
-            PreciseComplexSample(real: doubles[$0], imag: doubles[$0 + 1])
+            SoapyPreciseComplexSample(real: doubles[$0], imag: doubles[$0 + 1])
         }
     }
     
-    public static func arrayFrom<T>(_ integers: [T]) -> [PreciseComplexSample]? where T : FixedWidthInteger, T : UnsignedInteger {
+    public static func arrayFrom<T>(_ integers: [T]) -> [SoapyPreciseComplexSample]? where T : FixedWidthInteger, T : UnsignedInteger {
         guard integers.count % 2 == 0 else { return nil }
         let scale = Double(T.max)
         return stride(from: 0, to: integers.count, by: 2).map {
             let realScaled = (Double(integers[$0]) / scale) * 2 - 1
             let imagScaled = (Double(integers[$0 + 1]) / scale) * 2 - 1
-            return PreciseComplexSample(real: realScaled, imag: imagScaled)
+            return SoapyPreciseComplexSample(real: realScaled, imag: imagScaled)
         }
     }
     
-    public static func arrayFrom<T>(_ integers: [T]) -> [PreciseComplexSample]? where T : FixedWidthInteger, T : SignedInteger {
+    public static func arrayFrom<T>(_ integers: [T]) -> [SoapyPreciseComplexSample]? where T : FixedWidthInteger, T : SignedInteger {
         guard integers.count % 2 == 0 else { return nil }
         let scale = Double(T.max)
         return stride(from: 0, to: integers.count, by: 2).map {
             let realScaled = Swift.max(-1.0, Double(integers[$0]) / scale)
             let imagScaled = Swift.max(-1.0, Double(integers[$0 + 1]) / scale)
-            return PreciseComplexSample(real: realScaled, imag: imagScaled)
+            return SoapyPreciseComplexSample(real: realScaled, imag: imagScaled)
         }
     }
 }
@@ -321,7 +321,7 @@ protocol AsyncHandler {
     func getHandlerIsActive() -> Bool
 }
 
-public class SoapyAsyncHandler<T: SampleData>: AsyncHandler {
+public class SoapyAsyncHandler<T: SoapySampleData>: AsyncHandler {
     private let isActiveQueue: DispatchQueue = .init(label: "SoapyAsyncIsActiveQueue")
     private let readingQueue: DispatchQueue = .init(label: "SoapyAsyncReadingQueue")
     private let device: SoapyDevice
@@ -412,21 +412,21 @@ public class SoapyAsyncHandler<T: SampleData>: AsyncHandler {
         }
     }
 
-    private static func printTypeWarningIfApplicable<X: SampleData>(streamIsComplex: Bool, type: X.Type) {
+    private static func printTypeWarningIfApplicable<X: SoapySampleData>(streamIsComplex: Bool, type: X.Type) {
         switch type {
-        case is Sample.Type:
+        case is SoapySample.Type:
             if streamIsComplex {
                 print("SoapyAsyncHandler: Warning! Using Sample (non-complex) as output type for a complex-valued stream. Stream will need to be handled as interleaved IQ data.")
             }
-        case is PreciseSample.Type:
+        case is SoapyPreciseSample.Type:
             if streamIsComplex {
                 print("SoapyAsyncHandler: Warning! Using PreciseSample (non-complex) as output type for a complex-valued stream. Stream will need to be handled as interleaved IQ data.")
             }
-        case is ComplexSample.Type:
+        case is SoapyComplexSample.Type:
             if !streamIsComplex {
                 print("SoapyAsyncHandler: Warning! Using ComplexSample as output type for a non-complex valued stream. Each sample will consist of two consecutively sampled real values.")
             }
-        case is PreciseComplexSample.Type:
+        case is SoapyPreciseComplexSample.Type:
             if !streamIsComplex {
                 print("SoapyAsyncHandler: Warning! Using PreciseComplexSample as output type for a non-complex valued stream. Each sample will consist of two consecutively sampled real values.")
             }
