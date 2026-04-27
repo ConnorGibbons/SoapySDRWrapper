@@ -14,7 +14,7 @@ let package = Package(
             name: "SoapySDRWrapperTests",
             dependencies: ["SoapySDRWrapper"]
         ),
-        .systemLibrary(name: "CSoapySDR", pkgConfig: "soapysdr",
+        .systemLibrary(name: "CSoapySDR", pkgConfig: "SoapySDR",
                        providers:
                         [.brew(["soapysdr"]),
                          .aptItem(["libsoapysdr-dev"])
